@@ -11,6 +11,6 @@ import com.example.fitbuddies.viewmodels.HomeViewModel
 @Composable
 fun ProfileScreen(viewModel: HomeViewModel) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Workouts Screen")
+        Text("Profile Screen")
     }
 }
