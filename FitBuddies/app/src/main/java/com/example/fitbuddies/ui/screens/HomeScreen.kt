@@ -18,9 +18,9 @@ import com.example.fitbuddies.viewmodels.FriendActivity
 import com.example.fitbuddies.viewmodels.HomeViewModel
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
-    val challenges by viewModel.challenges.collectAsState()
-    val friendActivities by viewModel.friendActivities.collectAsState()
+fun HomeScreen(homeViewModel: HomeViewModel) {
+    val challenges by homeViewModel.challenges.collectAsState()
+    val friendActivities by homeViewModel.friendActivities.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(

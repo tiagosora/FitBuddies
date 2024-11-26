@@ -6,11 +6,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.fitbuddies.viewmodels.ChallengesViewModel
 
 @Composable
-fun ChallengesScreen(viewModel: ChallengesViewModel) {
+fun AddChallengeScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Challenges Screen")
+        Text("Add Challenge Screen")
     }
 }

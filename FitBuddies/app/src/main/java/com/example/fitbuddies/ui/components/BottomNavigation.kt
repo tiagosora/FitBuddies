@@ -21,6 +21,8 @@ sealed class NavigationItem(
     data object Friends : NavigationItem("friends", Icons.Default.Person, "Friends")
     data object Challenges : NavigationItem("dares", Icons.Default.Menu, "Dares")
     data object Profile : NavigationItem("profile", Icons.Default.AccountCircle, "Profile")
+
+    data object Add : NavigationItem("add", Icons.Default.Add, "Add")
 }
 
 @Composable
@@ -32,7 +34,7 @@ fun BottomNavigationBar(
         modifier = Modifier.fillMaxWidth()
     ) {
         FloatingActionButton(
-            onClick = { /* TODO: Create new dare */ },
+            onClick = { onNavigate(NavigationItem.Add) },
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .offset(y = (-32).dp)
@@ -66,8 +68,8 @@ fun BottomNavigationBar(
                     selected = currentRoute == item.route,
                     onClick = { onNavigate(item) },
                     modifier = Modifier.padding(
-                        end = if (index == 1) 32.dp else 0.dp,
-                        start = if (index == 2) 32.dp else 0.dp
+                        end = if (index == 1) 48.dp else 0.dp,
+                        start = if (index == 2) 48.dp else 0.dp
                     )
                 )
             }
