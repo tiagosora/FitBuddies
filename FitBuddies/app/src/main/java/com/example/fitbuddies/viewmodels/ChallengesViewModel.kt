@@ -19,7 +19,11 @@ class ChallengesViewModel : ViewModel() {
         listOf(
             Challenge("4", "10K Steps", "Walk 10,000 steps daily for a week", "Walking"),
             Challenge("5", "Plank Challenge", "Hold a plank for 2 minutes", "Weightlifting"),
-            Challenge("6", "20K Cycling", "Cycle 20 kilometers in one session", "Cycling")
+            Challenge("6", "20K Cycling", "Cycle 20 kilometers in one session", "Cycling"),
+            Challenge("7", "1K Swim", "Swim 1 kilometer in a single session", "Swimming"),
+            Challenge("8", "50 Squats", "Do 50 squats in a single day", "Weightlifting"),
+            Challenge("9", "15-min Meditation", "Meditate for 15 minutes daily", "Other"),
+            Challenge("10", "5K Rowing", "Row 5 kilometers in one session", "Rowing"),
         )
     )
     val acceptedChallenges: StateFlow<List<Challenge>> = _acceptedChallenges.asStateFlow()

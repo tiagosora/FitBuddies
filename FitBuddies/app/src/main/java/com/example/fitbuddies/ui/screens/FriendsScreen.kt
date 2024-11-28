@@ -23,69 +23,72 @@ import com.example.fitbuddies.viewmodels.FriendRequest
 import com.example.fitbuddies.viewmodels.Friend
 import com.example.fitbuddies.viewmodels.FriendsViewModel
 
-
 @Composable
 fun FriendsScreen(viewModel: FriendsViewModel) {
     val friends by viewModel.friends.collectAsState()
     val friendRequests by viewModel.friendRequests.collectAsState()
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-        // Search Bar
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            label = { Text("Find Fitness Buddies") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-            singleLine = true,
-            shape = MaterialTheme.shapes.medium,
-            // colors = TextFieldDefaults.outlinedTextFieldColors(
-            //     focusedBorderColor = MaterialTheme.colorScheme.primary,
-            //     unfocusedBorderColor = MaterialTheme.colorScheme.outline
-            // )
-        )
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Find Fitness Buddies") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium
+            )
+        }
 
-        // Friend Requests Section
         if (friendRequests.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Friend Requests",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            item {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(friendRequests) { request ->
+                        FriendRequestCard(
+                            friendRequest = request,
+                            onAccept = { viewModel.acceptFriendRequest(request.id) },
+                            onDeny = { viewModel.denyFriendRequest(request.id) }
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        item {
             Text(
-                text = "Friend Requests",
+                text = "Fitness Buddies",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(friendRequests) { request ->
-                    FriendRequestCard(
-                        friendRequest = request,
-                        onAccept = { viewModel.acceptFriendRequest(request.id) },
-                        onDeny = { viewModel.denyFriendRequest(request.id) }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Friends List Section
-        Text(
-            text = "Fitness Buddies",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items(friends) { friend ->
-                FriendItem(friend, onChallenge = { viewModel.challengeFriend(friend.id) })
-            }
+        items(friends) { friend ->
+            FriendItem(friend, onChallenge = { viewModel.challengeFriend(friend.id) })
         }
     }
 }
@@ -166,8 +169,7 @@ fun FriendRequestCard(
 fun FriendItem(friend: Friend, onChallenge: () -> Unit) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -221,3 +223,4 @@ fun FriendItem(friend: Friend, onChallenge: () -> Unit) {
         }
     }
 }
+
