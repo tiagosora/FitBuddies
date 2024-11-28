@@ -14,30 +14,27 @@ class HomeViewModel : ViewModel() {
     init {
         // TODO: Replace with actual data fetching
         _challenges.value = listOf(
-            Challenge("30 Day Plank", "Do a plank every day for 30 days"),
-            Challenge("5K Run", "Train and complete a 5K run"),
-            Challenge("100 Push-ups", "Do 100 push-ups in one day")
+            Challenge("30 Day Plank", "Exercise", "Do a plank every day for 30 days"),
+            Challenge("5K Run", "Running", "Train and complete a 5K run"),
+            Challenge("100 Push-ups", "Exercise", "Do 100 push-ups in one day")
         )
 
         _friendActivities.value = listOf(
-            FriendActivity("John Doe", "Completed the 30 Day Plank challenge"),
-            FriendActivity("Jane Smith", "Started a new 5K Run challenge"),
-            FriendActivity("Mike Johnson", "Invited you to the 100 Push-ups challenge"),
-            FriendActivity("John Doe", "Completed the 30 Day Plank challenge"),
-            FriendActivity("Jane Smith", "Started a new 5K Run challenge"),
-            FriendActivity("Mike Johnson", "Invited you to the 100 Push-ups challenge"),
-            FriendActivity("John Doe", "Completed the 30 Day Plank challenge"),
-            FriendActivity("Jane Smith", "Started a new 5K Run challenge"),
-            FriendActivity("Mike Johnson", "Invited you to the 100 Push-ups challenge"),
-            FriendActivity("John Doe", "Completed the 30 Day Plank challenge"),
-            FriendActivity("Jane Smith", "Started a new 5K Run challenge"),
-            FriendActivity("Mike Johnson", "Invited you to the 100 Push-ups challenge"),
-            FriendActivity("John Doe", "Completed the 30 Day Plank challenge"),
-            FriendActivity("Jane Smith", "Started a new 5K Run challenge"),
-            FriendActivity("Mike Johnson", "Invited you to the 100 Push-ups challenge"),
+            FriendActivity("Jane Doe", "Cycling", "Cycling with Jane"),
+            FriendActivity("John Smith", "Running", "Running with John"),
+            FriendActivity("Alice Johnson", "Yoga", "Yoga session with Alice"),
+            FriendActivity("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
+            FriendActivity("Jane Doe", "Cycling", "Cycling with Jane"),
+            FriendActivity("John Smith", "Running", "Running with John"),
+            FriendActivity("Alice Johnson", "Yoga", "Yoga session with Alice"),
+            FriendActivity("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
+            FriendActivity("Jane Doe", "Cycling", "Cycling with Jane"),
+            FriendActivity("John Smith", "Running", "Running with John"),
+            FriendActivity("Alice Johnson", "Yoga", "Yoga session with Alice"),
+            FriendActivity("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
         )
     }
 }
 
-data class Challenge(val title: String, val description: String)
-data class FriendActivity(val friendName: String, val activityDescription: String)
+data class Challenge(val title: String, val type: String, val description: String, val progress: Float = 0.0f)
+data class FriendActivity(val friendName: String, val activityType: String, val activityDescription: String)

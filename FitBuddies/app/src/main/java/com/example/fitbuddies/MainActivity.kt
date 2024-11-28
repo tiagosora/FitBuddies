@@ -4,25 +4,22 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitbuddies.ui.components.BottomNavigationBar
 import com.example.fitbuddies.ui.components.NavigationItem
-import com.example.fitbuddies.ui.screens.AddChallengeScreen
-import com.example.fitbuddies.ui.screens.HomeScreen
-import com.example.fitbuddies.ui.screens.FriendsScreen
-import com.example.fitbuddies.ui.screens.ProfileScreen
-import com.example.fitbuddies.ui.screens.ChallengesScreen
+import com.example.fitbuddies.ui.screens.*
 import com.example.fitbuddies.ui.theme.FitBuddiesTheme
-import com.example.fitbuddies.viewmodels.ChallengesViewModel
-import com.example.fitbuddies.viewmodels.FriendsViewModel
-import com.example.fitbuddies.viewmodels.HomeViewModel
-import com.example.fitbuddies.viewmodels.ProfileViewModel
+import com.example.fitbuddies.viewmodels.*
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,12 +46,24 @@ fun MainScreen() {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Hi, ${profileViewModel.profile.value.name}",
-                    )
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.FitnessCenter,
+                            contentDescription = "Fitness",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Hi, ${profileViewModel.profile.value.name ?: "User"}",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { /* TODO: Implement notifications */ }) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                    }
+                    IconButton(onClick = { /* TODO: Implement settings */ }) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
@@ -67,12 +76,12 @@ fun MainScreen() {
                     currentRoute = navigationItem.route
                 }
             )
-        }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(top = innerPadding.calculateTopPadding())
         ) {
             when (currentRoute) {
                 NavigationItem.Home.route -> HomeScreen(homeViewModel)
@@ -80,7 +89,7 @@ fun MainScreen() {
                 NavigationItem.Challenges.route -> ChallengesScreen(challengesViewModel)
                 NavigationItem.Profile.route -> ProfileScreen(profileViewModel)
                 NavigationItem.Add.route -> AddChallengeScreen()
-                else -> HomeScreen(homeViewModel) // TODO: Temporary default
+                else -> HomeScreen(homeViewModel)
             }
         }
     }
