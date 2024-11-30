@@ -52,8 +52,8 @@ fun ChallengesScreen(viewModel: ChallengesViewModel) {
             items(pendingChallenges) { challenge ->
                 PendingChallengeItem(
                     challenge = challenge,
-                    onAccept = { viewModel.acceptChallenge(challenge.id) },
-                    onDeny = { viewModel.denyChallenge(challenge.id) }
+                    onAccept = {},
+                    onDeny = {},
                 )
             }
         }
@@ -75,12 +75,12 @@ fun ChallengesScreen(viewModel: ChallengesViewModel) {
             state = reorderState.listState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // This will make the LazyColumn take up all available space
+                .weight(1f)
                 .reorderable(reorderState)
                 .detectReorderAfterLongPress(reorderState)
         ) {
-            items(acceptedChallenges, { it.id }) { challenge ->
-                ReorderableItem(reorderableState = reorderState, key = challenge.id) { isDragging ->
+            items(acceptedChallenges) { challenge ->
+                ReorderableItem(reorderableState = reorderState, key = challenge.title) { isDragging ->
                     val elevation = if (isDragging) 16.dp else 0.dp
                     AcceptedChallengeItem(
                         challenge = challenge,

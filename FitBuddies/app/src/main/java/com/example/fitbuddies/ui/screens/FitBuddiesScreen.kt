@@ -8,8 +8,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DirectionsBike
-import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,14 +17,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.example.fitbuddies.viewmodels.FriendRequest
-import com.example.fitbuddies.viewmodels.Friend
-import com.example.fitbuddies.viewmodels.FriendsViewModel
+import com.example.fitbuddies.viewmodels.FitBuddiesViewModel
+import com.example.fitbuddies.viewmodels.FitBuddy
+import com.example.fitbuddies.viewmodels.FriendshipRequest
 
 @Composable
-fun FriendsScreen(viewModel: FriendsViewModel) {
-    val friends by viewModel.friends.collectAsState()
-    val friendRequests by viewModel.friendRequests.collectAsState()
+fun FitBuddiesScreen(viewModel: FitBuddiesViewModel) {
+    val fitBuddies by viewModel.fitBuddies.collectAsState()
+    val friendShipRequests by viewModel.friendShipRequests.collectAsState()
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
     LazyColumn(
@@ -48,10 +46,10 @@ fun FriendsScreen(viewModel: FriendsViewModel) {
             )
         }
 
-        if (friendRequests.isNotEmpty()) {
+        if (friendShipRequests.isNotEmpty()) {
             item {
                 Text(
-                    text = "Friend Requests",
+                    text = "Friendship Requests",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -63,11 +61,11 @@ fun FriendsScreen(viewModel: FriendsViewModel) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(friendRequests) { request ->
-                        FriendRequestCard(
+                    items(friendShipRequests) { request ->
+                        FriendshipRequestCard(
                             friendRequest = request,
-                            onAccept = { viewModel.acceptFriendRequest(request.id) },
-                            onDeny = { viewModel.denyFriendRequest(request.id) }
+                            onAccept = {},
+                            onDeny = {}
                         )
                     }
                 }
@@ -87,15 +85,15 @@ fun FriendsScreen(viewModel: FriendsViewModel) {
             )
         }
 
-        items(friends) { friend ->
-            FriendItem(friend, onChallenge = { viewModel.challengeFriend(friend.id) })
+        items(fitBuddies) { fitBuddy ->
+            FitBuddyItem(fitBuddy, onChallenge = {})
         }
     }
 }
 
 @Composable
-fun FriendRequestCard(
-    friendRequest: FriendRequest,
+fun FriendshipRequestCard(
+    friendRequest: FriendshipRequest,
     onAccept: () -> Unit,
     onDeny: () -> Unit
 ) {
@@ -166,7 +164,7 @@ fun FriendRequestCard(
 }
 
 @Composable
-fun FriendItem(friend: Friend, onChallenge: () -> Unit) {
+fun FitBuddyItem(fitBuddy: FitBuddy, onChallenge: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth(),
@@ -187,13 +185,8 @@ fun FriendItem(friend: Friend, onChallenge: () -> Unit) {
                     .background(MaterialTheme.colorScheme.primaryContainer)
             ) {
                 Icon(
-                    imageVector = when (friend.preferredWorkout) {
-                        "Running" -> Icons.AutoMirrored.Filled.DirectionsRun
-                        "Cycling" -> Icons.AutoMirrored.Filled.DirectionsBike
-                        "Weightlifting" -> Icons.Default.FitnessCenter
-                        else -> Icons.Default.SportsHandball
-                    },
-                    contentDescription = null,
+                    imageVector = Icons.Default.SportsHandball,
+                    contentDescription = "Fit Buddy Profile Picture",
                     modifier = Modifier
                         .size(32.dp)
                         .align(Alignment.Center),
@@ -203,12 +196,12 @@ fun FriendItem(friend: Friend, onChallenge: () -> Unit) {
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = friend.name,
+                    text = fitBuddy.name,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Last workout: ${friend.lastWorkout}",
+                    text = fitBuddy.status,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

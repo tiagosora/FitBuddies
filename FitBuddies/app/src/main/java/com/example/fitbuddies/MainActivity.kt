@@ -4,14 +4,12 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitbuddies.ui.components.BottomNavigationBar
@@ -38,7 +36,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     var currentRoute by remember { mutableStateOf(NavigationItem.Home.route) }
     val homeViewModel = viewModel<HomeViewModel>()
-    val friendsViewModel = viewModel<FriendsViewModel>()
+    val friendsViewModel = viewModel<FitBuddiesViewModel>()
     val challengesViewModel = viewModel<ChallengesViewModel>()
     val profileViewModel = viewModel<ProfileViewModel>()
 
@@ -54,7 +52,7 @@ fun MainScreen() {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Hi, ${profileViewModel.profile.value.name ?: "User"}",
+                            text = "${profileViewModel.user.value.firstName} ${profileViewModel.user.value.lastName}",
                             style = MaterialTheme.typography.titleLarge
                         )
                     }
@@ -85,7 +83,7 @@ fun MainScreen() {
         ) {
             when (currentRoute) {
                 NavigationItem.Home.route -> HomeScreen(homeViewModel)
-                NavigationItem.Friends.route -> FriendsScreen(friendsViewModel)
+                NavigationItem.Friends.route -> FitBuddiesScreen(friendsViewModel)
                 NavigationItem.Challenges.route -> ChallengesScreen(challengesViewModel)
                 NavigationItem.Profile.route -> ProfileScreen(profileViewModel)
                 NavigationItem.Add.route -> AddChallengeScreen()

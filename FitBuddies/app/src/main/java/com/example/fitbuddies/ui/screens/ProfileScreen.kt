@@ -21,8 +21,8 @@ import com.example.fitbuddies.viewmodels.ProfileViewModel
 
 @Composable
 fun ProfileScreen(profileViewModel: ProfileViewModel) {
-    val profile by profileViewModel.profile.collectAsState()
-    val recentActivities by profileViewModel.recentActivities.collectAsState()
+    val user by profileViewModel.user.collectAsState()
+    val challenges by profileViewModel.challenges.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -31,9 +31,9 @@ fun ProfileScreen(profileViewModel: ProfileViewModel) {
     ) {
         item {
             ProfileHeader(
-                name = profile.name,
-                email = profile.email,
-                profilePicUrl = profile.profilePicUrl
+                name = "${user.firstName} ${user.lastName}",
+                email = user.email,
+                profilePictureUrl = user.profilePictureUrl ?: ""
             )
         }
         item { Spacer(modifier = Modifier.height(8.dp)) }
@@ -63,45 +63,38 @@ fun ProfileScreen(profileViewModel: ProfileViewModel) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
         item {
             FitnessStatsSection(
-                totalWorkouts = profile.totalWorkouts,
-                totalDistance = profile.totalDistance,
-                totalCaloriesBurned = profile.totalCaloriesBurned
-            )
-        }
-        item { Spacer(modifier = Modifier.height(24.dp)) }
-        item {
-            Text(
-                "Fitness Goals",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                challengesCompleted = user.challengesCompleted,
+                distanceTraveled = user.distanceTraveled,
+                caloriesBurned = user.caloriesBurned
             )
         }
         item { Spacer(modifier = Modifier.height(8.dp)) }
         item {
             FitnessGoalsSection(
-                weeklyWorkoutGoal = profile.weeklyWorkoutGoal,
-                weeklyDistanceGoal = profile.weeklyDistanceGoal,
-                weeklyCalorieGoal = profile.weeklyCalorieGoal
+                profileViewModel = profileViewModel,
+                challengesCompleted = user.challengesCompleted,
+                distanceTraveled = user.distanceTraveled,
+                caloriesBurned = user.caloriesBurned
             )
         }
         item { Spacer(modifier = Modifier.height(24.dp)) }
         item {
             Text(
-                "Recent Activities",
+                "Recent Challenges",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         }
         item { Spacer(modifier = Modifier.height(8.dp)) }
-        items(recentActivities) { activity ->
-            ActivityItem(activity)
+        items(challenges) { challenge ->
+            ChallengeItem(challenge)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-fun ProfileHeader(name: String, email: String, profilePicUrl: String) {
+fun ProfileHeader(name: String, email: String, profilePictureUrl: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -139,28 +132,28 @@ fun ProfileHeader(name: String, email: String, profilePicUrl: String) {
 }
 
 @Composable
-fun FitnessStatsSection(totalWorkouts: Int, totalDistance: Float, totalCaloriesBurned: Int) {
+fun FitnessStatsSection(challengesCompleted: Int, distanceTraveled: Double, caloriesBurned: Int) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp) // Space between cards
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         StatCard(
             icon = Icons.Default.FitnessCenter,
-            value = totalWorkouts.toString(),
+            value = challengesCompleted.toString(),
             label = "Workouts",
-            modifier = Modifier.weight(1f) // Occupies 1/3 of the row width
+            modifier = Modifier.weight(1f)
         )
         StatCard(
             icon = Icons.AutoMirrored.Filled.DirectionsRun,
-            value = "%.1f km".format(totalDistance),
+            value = "%.1f km".format(distanceTraveled),
             label = "Distance",
-            modifier = Modifier.weight(1f) // Occupies 1/3 of the row width
+            modifier = Modifier.weight(1f)
         )
         StatCard(
             icon = Icons.Default.LocalFireDepartment,
-            value = totalCaloriesBurned.toString(),
+            value = caloriesBurned.toString(),
             label = "Calories",
-            modifier = Modifier.weight(1f) // Occupies 1/3 of the row width
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -169,7 +162,7 @@ fun FitnessStatsSection(totalWorkouts: Int, totalDistance: Float, totalCaloriesB
 fun StatCard(icon: ImageVector, value: String, label: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
-            .padding(4.dp), // Add spacing around each card
+            .padding(4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Column(
@@ -204,27 +197,31 @@ fun StatCard(icon: ImageVector, value: String, label: String, modifier: Modifier
 }
 
 @Composable
-fun FitnessGoalsSection(weeklyWorkoutGoal: Int, weeklyDistanceGoal: Float, weeklyCalorieGoal: Int) {
+fun FitnessGoalsSection(profileViewModel: ProfileViewModel, challengesCompleted: Int, distanceTraveled: Double, caloriesBurned: Int) {
+    val nextChallengesGoal: Int = profileViewModel.challengesGoals.firstOrNull { it > challengesCompleted } ?: profileViewModel.challengesGoals.last()
+    val nextDistanceGoal: Int = profileViewModel.distanceGoals.firstOrNull { it > distanceTraveled } ?: profileViewModel.distanceGoals.last()
+    val nextCaloriesGoal: Int = profileViewModel.caloriesGoals.firstOrNull { it > caloriesBurned } ?: profileViewModel.caloriesGoals.last()
+    
     Column(modifier = Modifier.fillMaxWidth()) {
         GoalProgressBar(
             icon = Icons.Default.FitnessCenter,
-            current = weeklyWorkoutGoal,
-            goal = 7,
-            label = "$weeklyWorkoutGoal/7 workouts"
+            current = challengesCompleted,
+            goal = nextChallengesGoal,
+            label = "$challengesCompleted/$nextChallengesGoal workouts"
         )
         Spacer(modifier = Modifier.height(8.dp))
         GoalProgressBar(
             icon = Icons.AutoMirrored.Filled.DirectionsRun,
-            current = weeklyDistanceGoal.toInt(),
-            goal = 50,
-            label = "%.1f/50 km".format(weeklyDistanceGoal)
+            current = distanceTraveled.toInt(),
+            goal = nextDistanceGoal,
+            label = "%.1f/$nextDistanceGoal km".format(distanceTraveled)
         )
         Spacer(modifier = Modifier.height(8.dp))
         GoalProgressBar(
             icon = Icons.Default.LocalFireDepartment,
-            current = weeklyCalorieGoal,
-            goal = 3500,
-            label = "$weeklyCalorieGoal/3500 calories"
+            current = caloriesBurned,
+            goal = nextCaloriesGoal,
+            label = "$caloriesBurned/$nextCaloriesGoal calories"
         )
     }
 }
@@ -260,7 +257,7 @@ fun GoalProgressBar(icon: ImageVector, current: Int, goal: Int, label: String) {
 }
 
 @Composable
-fun ActivityItem(activity: ProfileViewModel.Activity) {
+fun ChallengeItem(challenge: ProfileViewModel.Challenge) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -270,7 +267,7 @@ fun ActivityItem(activity: ProfileViewModel.Activity) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = when (activity.type) {
+                imageVector = when (challenge.type) {
                     "Running" -> Icons.AutoMirrored.Filled.DirectionsRun
                     "Cycling" -> Icons.AutoMirrored.Filled.DirectionsBike
                     "Weightlifting" -> Icons.Default.FitnessCenter
@@ -283,18 +280,18 @@ fun ActivityItem(activity: ProfileViewModel.Activity) {
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = activity.name,
+                    text = challenge.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = activity.date,
+                    text = challenge.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
-                text = activity.duration,
+                text = challenge.date,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )

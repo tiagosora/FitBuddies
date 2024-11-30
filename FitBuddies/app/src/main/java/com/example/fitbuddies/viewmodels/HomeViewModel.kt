@@ -5,36 +5,39 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class HomeViewModel : ViewModel() {
-    private val _challenges = MutableStateFlow<List<Challenge>>(emptyList())
-    val challenges: StateFlow<List<Challenge>> = _challenges
 
-    private val _friendActivities = MutableStateFlow<List<FriendActivity>>(emptyList())
-    val friendActivities: StateFlow<List<FriendActivity>> = _friendActivities
+    val dailySteps: Int = 8234
+
+    private val _activeChallenges = MutableStateFlow<List<ActiveChallenge>>(emptyList())
+    val activeChallenges: StateFlow<List<ActiveChallenge>> = _activeChallenges
+
+    private val _fitBuddiesChallenges = MutableStateFlow<List<FitBuddyChallenge>>(emptyList())
+    val fitBuddiesChallenges: StateFlow<List<FitBuddyChallenge>> = _fitBuddiesChallenges
 
     init {
         // TODO: Replace with actual data fetching
-        _challenges.value = listOf(
-            Challenge("30 Day Plank", "Exercise", "Do a plank every day for 30 days"),
-            Challenge("5K Run", "Running", "Train and complete a 5K run"),
-            Challenge("100 Push-ups", "Exercise", "Do 100 push-ups in one day")
+        _activeChallenges.value = listOf(
+            ActiveChallenge("30 Day Plank", "Exercise", "Do a plank every day for 30 days"),
+            ActiveChallenge("5K Run", "Running", "Train and complete a 5K run"),
+            ActiveChallenge("100 Push-ups", "Exercise", "Do 100 push-ups in one day")
         )
 
-        _friendActivities.value = listOf(
-            FriendActivity("Jane Doe", "Cycling", "Cycling with Jane"),
-            FriendActivity("John Smith", "Running", "Running with John"),
-            FriendActivity("Alice Johnson", "Yoga", "Yoga session with Alice"),
-            FriendActivity("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
-            FriendActivity("Jane Doe", "Cycling", "Cycling with Jane"),
-            FriendActivity("John Smith", "Running", "Running with John"),
-            FriendActivity("Alice Johnson", "Yoga", "Yoga session with Alice"),
-            FriendActivity("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
-            FriendActivity("Jane Doe", "Cycling", "Cycling with Jane"),
-            FriendActivity("John Smith", "Running", "Running with John"),
-            FriendActivity("Alice Johnson", "Yoga", "Yoga session with Alice"),
-            FriendActivity("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
+        _fitBuddiesChallenges.value = listOf(
+            FitBuddyChallenge("Jane Doe", "Cycling", "Cycling with Jane"),
+            FitBuddyChallenge("John Smith", "Running", "Running with John"),
+            FitBuddyChallenge("Alice Johnson", "Yoga", "Yoga session with Alice"),
+            FitBuddyChallenge("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
+            FitBuddyChallenge("Jane Doe", "Cycling", "Cycling with Jane"),
+            FitBuddyChallenge("John Smith", "Running", "Running with John"),
+            FitBuddyChallenge("Alice Johnson", "Yoga", "Yoga session with Alice"),
+            FitBuddyChallenge("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
+            FitBuddyChallenge("Jane Doe", "Cycling", "Cycling with Jane"),
+            FitBuddyChallenge("John Smith", "Running", "Running with John"),
+            FitBuddyChallenge("Alice Johnson", "Yoga", "Yoga session with Alice"),
+            FitBuddyChallenge("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
         )
     }
 }
 
-data class Challenge(val title: String, val type: String, val description: String, val progress: Float = 0.0f)
-data class FriendActivity(val friendName: String, val activityType: String, val activityDescription: String)
+data class ActiveChallenge(val title: String, val type: String, val description: String, val completionRate: Float = 0.0f)
+data class FitBuddyChallenge(val fitBuddyName: String, val lastChallengeType: String, val lastChallengeDescription: String)

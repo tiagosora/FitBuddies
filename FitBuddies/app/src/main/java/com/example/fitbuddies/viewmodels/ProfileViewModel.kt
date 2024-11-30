@@ -1,52 +1,58 @@
 package com.example.fitbuddies.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.room.PrimaryKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.UUID
 
 class ProfileViewModel : ViewModel() {
-    private val _profile = MutableStateFlow(
-        Profile(
-            name = "John Doe",
+    private val _user = MutableStateFlow(
+        User(
+            firstName = "John",
+            lastName = "Doe",
             email = "john.doe@example.com",
-            profilePicUrl = "",
-            totalWorkouts = 42,
-            totalDistance = 1.5722223E17f,
-            totalCaloriesBurned = 12222500,
-            weeklyWorkoutGoal = 5,
-            weeklyDistanceGoal = 30f,
-            weeklyCalorieGoal = 2000
+            profilePictureUrl = "",
+            challengesCompleted = 42,
+            distanceTraveled = 35.00,
+            caloriesBurned = 8627,
         )
     )
-    val profile: StateFlow<Profile> = _profile.asStateFlow()
+    val user: StateFlow<User> = _user.asStateFlow()
 
-    private val _recentActivities = MutableStateFlow(
+    private val _challenges = MutableStateFlow(
         listOf(
-            Activity("Morning Run", "Running", "Today", "30 min"),
-            Activity("Strength Training", "Weightlifting", "Yesterday", "45 min"),
-            Activity("Evening Cycle", "Cycling", "2 days ago", "1 hr")
+            Challenge(title = "30 Day Plank", type = "Exercise", date = "2021-09-01", description = "Do a plank every day for 30 days"),
+            Challenge(title = "5K Run", type = "Running", date = "2021-09-01", description = "Train and complete a 5K run"),
+            Challenge(title = "5K Bicycling", type = "Bicycling", date = "2021-09-01", description = "Train and complete a 5K bicycling"),
+            Challenge(title = "100 Push-ups", type = "Exercise", date = "2021-09-01", description = "Do 100 push-ups in one day"),
+            Challenge(title = "100 Squats", type = "Exercise", date = "2021-09-01", description = "Do 100 squats in one day"),
+            Challenge(title = "100 Sit-ups", type = "Exercise", date = "2021-09-01", description = "Do 100 sit-ups in one day"),
         )
     )
-    val recentActivities: StateFlow<List<Activity>> = _recentActivities.asStateFlow()
+    val challenges: StateFlow<List<Challenge>> = _challenges.asStateFlow()
 
-    data class Profile(
-        val name: String,
+    // List of numbers of goals to be completed
+    val challengesGoals = listOf(5, 10, 15, 20, 25, 30, 35, 40, 45, 50)
+    val distanceGoals = listOf(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+    val caloriesGoals = listOf(1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000)
+
+    data class User(
         val email: String,
-        val profilePicUrl: String,
-        val totalWorkouts: Int,
-        val totalDistance: Float,
-        val totalCaloriesBurned: Int,
-        val weeklyWorkoutGoal: Int,
-        val weeklyDistanceGoal: Float,
-        val weeklyCalorieGoal: Int
+        val firstName: String,
+        val lastName: String,
+        val challengesCompleted: Int,
+        val distanceTraveled: Double,
+        val caloriesBurned: Int,
+        val profilePictureUrl: String? = null
     )
 
-    data class Activity(
-        val name: String,
+    data class Challenge(
+        val title: String,
         val type: String,
         val date: String,
-        val duration: String
+        val description: String
     )
 }
 

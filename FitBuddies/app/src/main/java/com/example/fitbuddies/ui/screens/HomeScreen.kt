@@ -19,14 +19,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.fitbuddies.viewmodels.Challenge
-import com.example.fitbuddies.viewmodels.FriendActivity
+import com.example.fitbuddies.viewmodels.ActiveChallenge
+import com.example.fitbuddies.viewmodels.FitBuddyChallenge
 import com.example.fitbuddies.viewmodels.HomeViewModel
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel) {
-    val challenges by homeViewModel.challenges.collectAsState()
-    val friendActivities by homeViewModel.friendActivities.collectAsState()
+    val activeChallenges by homeViewModel.activeChallenges.collectAsState()
+    val fitBuddiesChallenges by homeViewModel.fitBuddiesChallenges.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -34,7 +34,7 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
             .padding(16.dp)
     ) {
         item {
-            DailyActivitySummary()
+            DailyActivitySummary(homeViewModel)
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -53,8 +53,8 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(challenges) { challenge ->
-                    ChallengeCard(challenge)
+                items(activeChallenges) { activeChallenge ->
+                    ActiveChallengeCard(activeChallenge)
                 }
             }
         }
@@ -63,7 +63,7 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
         }
         item {
             Text(
-                "Friend Activities",
+                "FitBuddies Activities",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -71,15 +71,15 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
         item {
             Spacer(modifier = Modifier.height(8.dp))
         }
-        items(friendActivities) { activity ->
-            FriendActivityItem(activity)
+        items(fitBuddiesChallenges) { fitBuddyChallenge ->
+            FitBuddyChallengeItem(fitBuddyChallenge)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-fun DailyActivitySummary() {
+fun DailyActivitySummary(homeViewModel: HomeViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -101,7 +101,7 @@ fun DailyActivitySummary() {
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    "8,234 steps",
+                    homeViewModel.dailySteps.toString(),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold
@@ -118,7 +118,7 @@ fun DailyActivitySummary() {
 }
 
 @Composable
-fun ChallengeCard(challenge: Challenge) {
+fun ActiveChallengeCard(challenge: ActiveChallenge) {
     Card(
         modifier = Modifier
             .width(200.dp)
@@ -154,7 +154,7 @@ fun ChallengeCard(challenge: Challenge) {
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
             LinearProgressIndicator(
-                progress = { challenge.progress },
+                progress = { challenge.completionRate },
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.primaryContainer
@@ -164,10 +164,10 @@ fun ChallengeCard(challenge: Challenge) {
 }
 
 @Composable
-fun FriendActivityItem(activity: FriendActivity) {
+fun FitBuddyChallengeItem(fitBuddyChallenge: FitBuddyChallenge) {
     ListItem(
-        headlineContent = { Text(activity.friendName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold) },
-        supportingContent = { Text(activity.activityDescription, style = MaterialTheme.typography.bodySmall) },
+        headlineContent = { Text(fitBuddyChallenge.fitBuddyName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold) },
+        supportingContent = { Text(fitBuddyChallenge.lastChallengeDescription, style = MaterialTheme.typography.bodySmall) },
         leadingContent = {
             Surface(
                 modifier = Modifier
@@ -177,13 +177,13 @@ fun FriendActivityItem(activity: FriendActivity) {
                 color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Icon(
-                    imageVector = when (activity.activityType) {
+                    imageVector = when (fitBuddyChallenge.lastChallengeType) {
                         "Running" -> Icons.AutoMirrored.Filled.DirectionsRun
                         "Cycling" -> Icons.AutoMirrored.Filled.DirectionsBike
                         "Weightlifting" -> Icons.Default.FitnessCenter
                         else -> Icons.Default.SportsHandball
                     },
-                    contentDescription = activity.activityType,
+                    contentDescription = fitBuddyChallenge.lastChallengeType,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(8.dp)
                 )
