@@ -1,4 +1,4 @@
-package com.example.fitbuddies.models
+package com.example.fitbuddies.data.models
 
 enum class MediaType {
     PHOTO,

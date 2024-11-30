@@ -1,8 +1,8 @@
-package com.example.fitbuddies.repositories
+package com.example.fitbuddies.data.repositories
 
-import com.example.fitbuddies.models.ChallengeMedia
-import com.example.fitbuddies.local.ChallengeMediaDao
-import com.example.fitbuddies.remote.SupabaseService
+import com.example.fitbuddies.data.models.ChallengeMedia
+import com.example.fitbuddies.data.local.ChallengeMediaDao
+import com.example.fitbuddies.data.remote.SupabaseService
 import kotlinx.coroutines.flow.Flow
 import android.util.Log
 

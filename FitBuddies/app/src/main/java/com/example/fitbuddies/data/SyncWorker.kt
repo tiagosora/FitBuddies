@@ -1,9 +1,9 @@
 package com.example.fitbuddies.data
 
-import com.example.fitbuddies.repositories.ChallengeRepository
-import com.example.fitbuddies.repositories.DareRepository
-import com.example.fitbuddies.repositories.FriendshipRepository
-import com.example.fitbuddies.repositories.UserRepository
+import com.example.fitbuddies.data.repositories.ChallengeRepository
+import com.example.fitbuddies.data.repositories.DareRepository
+import com.example.fitbuddies.data.repositories.FriendshipRepository
+import com.example.fitbuddies.data.repositories.UserRepository
 
 class SyncWorker(
     private val challengeRepository: ChallengeRepository,

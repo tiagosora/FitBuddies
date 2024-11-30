@@ -1,7 +1,11 @@
-package com.example.fitbuddies.remote
+package com.example.fitbuddies.data.remote
 
+import com.example.fitbuddies.data.models.Challenge
+import com.example.fitbuddies.data.models.ChallengeMedia
+import com.example.fitbuddies.data.models.Dare
+import com.example.fitbuddies.data.models.Friendship
+import com.example.fitbuddies.data.models.User
 import retrofit2.http.*
-import com.example.fitbuddies.models.*
 import retrofit2.Response
 
 interface SupabaseService {

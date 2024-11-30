@@ -1,4 +1,4 @@
-package com.example.fitbuddies.models
+package com.example.fitbuddies.data.models
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -15,6 +15,7 @@ data class Challenge(
     @PrimaryKey val challengeId: String = UUID.randomUUID().toString(),
     val title: String,
     val description: String,
+    val type: String,
     val daredById: String,
     val creationDate: Long = System.currentTimeMillis(),
     val completionDate: Long? = null,

@@ -1,4 +1,4 @@
-package com.example.fitbuddies.remote
+package com.example.fitbuddies.data.remote
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
