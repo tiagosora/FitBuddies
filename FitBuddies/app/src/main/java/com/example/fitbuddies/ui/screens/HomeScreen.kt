@@ -63,7 +63,7 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
         }
         item {
             Text(
-                "FitBuddies Activities",
+                "FitBuddies Challenges",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )

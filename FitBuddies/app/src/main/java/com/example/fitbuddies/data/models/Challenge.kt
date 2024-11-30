@@ -18,6 +18,7 @@ data class Challenge(
     val type: String,
     val daredById: String,
     val creationDate: Long = System.currentTimeMillis(),
+    val deadlineDate: Long? = null,
     val completionDate: Long? = null,
     val completionRate: Int = 0,
     val isCompleted: Boolean = false

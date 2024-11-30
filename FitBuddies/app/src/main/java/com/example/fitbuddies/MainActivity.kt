@@ -24,7 +24,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FitBuddiesTheme {
-                MainScreen()
+                var showOnboarding by remember { mutableStateOf(true) } // TODO: Save onboarding state shared preferences and change to true
+
+                if (showOnboarding) {
+                    OnboardingScreen(
+                        onFinishOnboarding = {
+                            showOnboarding = false
+                        }
+                    )
+                } else {
+                    MainScreen()
+                }
             }
         }
     }
@@ -58,6 +68,9 @@ fun MainScreen() {
                     }
                 },
                 actions = {
+                    IconButton(onClick = { /* TODO: Implement settings */ }) {
+                        Icon(Icons.Default.QrCodeScanner, contentDescription = "QR Code Scanner")
+                    }
                     IconButton(onClick = { /* TODO: Implement notifications */ }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notifications")
                     }
