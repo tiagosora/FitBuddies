@@ -18,8 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.fitbuddies.viewmodels.FitBuddiesViewModel
-import com.example.fitbuddies.viewmodels.FitBuddy
-import com.example.fitbuddies.viewmodels.FriendshipRequest
+import com.example.fitbuddies.viewmodels.FitBuddiesViewModel.FitBuddy
+import com.example.fitbuddies.viewmodels.FitBuddiesViewModel.FriendshipRequest
 
 @Composable
 fun FitBuddiesScreen(viewModel: FitBuddiesViewModel) {

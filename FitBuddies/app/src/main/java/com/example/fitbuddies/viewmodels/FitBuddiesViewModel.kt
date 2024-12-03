@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class FitBuddiesViewModel : ViewModel() {
-    private val _fitBuddies = MutableStateFlow<List<FitBuddy>>(
+    private val _fitBuddies = MutableStateFlow(
         listOf(
             FitBuddy("John Doe", "Online"),
             FitBuddy("Jane Smith", "Last seen 2 hours ago"),
@@ -21,21 +21,22 @@ class FitBuddiesViewModel : ViewModel() {
     )
     val fitBuddies: StateFlow<List<FitBuddy>> = _fitBuddies
 
-    private val _friendShipRequests = MutableStateFlow<List<FriendshipRequest>>(
+    private val _friendShipRequests = MutableStateFlow(
         listOf(
             FriendshipRequest("Alice Brown"),
             FriendshipRequest("Bob White")
         )
     )
     val friendShipRequests: StateFlow<List<FriendshipRequest>> = _friendShipRequests
+
+    data class FitBuddy(
+        val name: String,
+        val status: String, // e.g., "Online", "Last seen 2 hours ago"
+        val profilePictureUrl: String = "",
+    )
+
+    data class FriendshipRequest(
+        val name: String,
+    )
 }
 
-data class FitBuddy(
-    val name: String,
-    val status: String, // e.g., "Online", "Last seen 2 hours ago"
-    val profilePictureUrl: String = "",
-)
-
-data class FriendshipRequest(
-    val name: String,
-)

@@ -11,8 +11,6 @@ class DareRepository(
     private val supabaseService: SupabaseService
 ) {
 
-    fun getDares(userId: String): Flow<List<Dare>> = dareDao.getDares(userId)
-
     suspend fun insertDare(dare: Dare) {
         dareDao.insertDare(dare) // Save locally first
         try {
@@ -22,13 +20,18 @@ class DareRepository(
         }
     }
 
-    suspend fun refreshDares() {
+    // acceptDare using challengeId and userId
+    suspend fun acceptDare(challengeId: String, userId: String) {
+        dareDao.acceptDare(challengeId, userId) // Update locally
         try {
-            val remoteDares = supabaseService.getAllDares()
-            remoteDares.forEach { dareDao.insertDare(it) } // Update local cache
+            supabaseService.acceptDare(challengeId, userId) // Sync to Supabase
         } catch (e: Exception) {
-            Log.e("DareRepository", "Failed to refresh dares", e)
+            Log.e("DareRepository", "Failed to accept dare: $challengeId", e)
         }
+    }
+
+    suspend fun refreshDares() {
+        // TODO: Implement this method
     }
 
     suspend fun deleteDare(dare: Dare) {

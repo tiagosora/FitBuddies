@@ -11,7 +11,7 @@ class FriendshipRepository(
     private val supabaseService: SupabaseService
 ) {
 
-    fun getFriends(userId: String): Flow<List<Friendship>> = friendshipDao.getFriends(userId)
+    fun getFriendshipsForUser(userId: String): Flow<List<Friendship>> = friendshipDao.getFriendshipsForUser(userId)
 
     suspend fun insertFriendship(friendship: Friendship) {
         friendshipDao.insertFriendship(friendship) // Save locally first
@@ -22,13 +22,17 @@ class FriendshipRepository(
         }
     }
 
-    suspend fun refreshFriendships() {
+    suspend fun acceptFriendRequest(userId: String, friendId: String) {
+        friendshipDao.acceptFriendRequest(userId, friendId) // Update locally
         try {
-            val remoteFriendships = supabaseService.getAllFriendships()
-            remoteFriendships.forEach { friendshipDao.insertFriendship(it) } // Update local cache
+            supabaseService.acceptFriendRequest(userId, friendId) // Sync to Supabase
         } catch (e: Exception) {
-            Log.e("FriendshipRepository", "Failed to refresh friendships", e)
+            Log.e("FriendshipRepository", "Failed to accept friend request", e)
         }
+    }
+
+    suspend fun refreshFriendships() {
+        // TODO: Implement this method
     }
 
     suspend fun deleteFriendship(friendship: Friendship) {

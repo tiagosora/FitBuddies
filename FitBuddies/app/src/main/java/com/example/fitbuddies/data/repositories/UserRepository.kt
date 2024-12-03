@@ -13,6 +13,10 @@ class UserRepository(
 
     val allUsers: Flow<List<User>> = userDao.getAllUsers()
 
+    suspend fun getUserById(userId: String): Flow<User?> {
+        return userDao.getUserById(userId)
+    }
+
     suspend fun insertUser(user: User) {
         userDao.insertUser(user) // Save locally first
         try {
@@ -23,12 +27,7 @@ class UserRepository(
     }
 
     suspend fun refreshUsers() {
-        try {
-            val remoteUsers = supabaseService.getAllUsers()
-            remoteUsers.forEach { userDao.insertUser(it) } // Update local cache
-        } catch (e: Exception) {
-            Log.e("UserRepository", "Failed to refresh users", e)
-        }
+        // TODO: Implement this method
     }
 
     suspend fun deleteUser(user: User) {

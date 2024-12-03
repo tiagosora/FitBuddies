@@ -11,8 +11,6 @@ import retrofit2.Response
 interface SupabaseService {
 
     // User Endpoints
-    @GET("users")
-    suspend fun getAllUsers(): List<User>
 
     @POST("users")
     suspend fun insertUser(@Body user: User): Response<Unit>
@@ -21,28 +19,31 @@ interface SupabaseService {
     suspend fun deleteUser(@Path("id") userId: String): Response<Unit>
 
     // Friendship Endpoints
-    @GET("friendships")
-    suspend fun getAllFriendships(): List<Friendship>
+
+    @POST("friendships/{userId}")
+    suspend fun getFriendshipsForUser(@Path("userId") userId: String): Response<List<Friendship>>
 
     @POST("friendships")
     suspend fun insertFriendship(@Body friendship: Friendship): Response<Unit>
+
+    @PATCH("friendships/accept/{userId}/{friendId}")
+    suspend fun acceptFriendRequest(@Path("userId") userId: String, @Path("friendId") friendId: String): Response<Unit>
 
     @DELETE("friendships")
     suspend fun deleteFriendship(@Body friendship: Friendship): Response<Unit>
 
     // Dare Endpoints
-    @GET("dares")
-    suspend fun getAllDares(): List<Dare>
 
     @POST("dares")
     suspend fun insertDare(@Body dare: Dare): Response<Unit>
+
+    @PATCH("dares/accept/{challengeId}/{userId}")
+    suspend fun acceptDare(@Path("challengeId") challengeId: String, @Path("userId") userId: String): Response<Unit>
 
     @DELETE("dares/{id}")
     suspend fun deleteDare(@Path("id") dareId: String): Response<Unit>
 
     // Challenge Endpoints
-    @GET("challenges")
-    suspend fun getAllChallenges(): List<Challenge>
 
     @POST("challenges")
     suspend fun insertChallenge(@Body challenge: Challenge): Response<Unit>
@@ -51,8 +52,6 @@ interface SupabaseService {
     suspend fun deleteChallenge(@Path("id") challengeId: String): Response<Unit>
 
     // Challenge Media Endpoints
-    @GET("challenge_media")
-    suspend fun getMediaByDare(@Query("dareId") dareId: String): List<ChallengeMedia>
 
     @POST("challenge_media")
     suspend fun insertMedia(@Body media: ChallengeMedia): Response<Unit>

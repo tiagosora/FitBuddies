@@ -10,8 +10,8 @@ import com.example.fitbuddies.data.models.ChallengeMedia
 
 @Dao
 interface ChallengeMediaDao {
-    @Query("SELECT * FROM challenge_media WHERE dareId = :dareId")
-    fun getMediaByDare(dareId: String): Flow<List<ChallengeMedia>>
+    @Query("SELECT * FROM challenge_media WHERE challengeId = :dareId")
+    fun getMediaByChallenge(dareId: String): Flow<List<ChallengeMedia>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMedia(media: ChallengeMedia)

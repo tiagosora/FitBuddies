@@ -19,9 +19,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.fitbuddies.viewmodels.ActiveChallenge
-import com.example.fitbuddies.viewmodels.FitBuddyChallenge
 import com.example.fitbuddies.viewmodels.HomeViewModel
+import com.example.fitbuddies.viewmodels.HomeViewModel.ActiveChallenge
+import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel) {

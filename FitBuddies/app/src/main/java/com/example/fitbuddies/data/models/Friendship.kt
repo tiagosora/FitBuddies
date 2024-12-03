@@ -14,5 +14,6 @@ import androidx.room.ForeignKey
 data class Friendship(
     val userId: String,
     val friendId: String,
-    val isAccepted: Boolean = false
+    val isAccepted: Boolean = false,
+    val creationDate: Long = System.currentTimeMillis()
 )

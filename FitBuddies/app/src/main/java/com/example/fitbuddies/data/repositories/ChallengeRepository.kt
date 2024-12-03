@@ -11,6 +11,8 @@ class ChallengeRepository(
     private val supabaseService: SupabaseService
 ) {
 
+    suspend fun getChallengeById(challengeId: String): Flow<Challenge?> = challengeDao.getChallengeById(challengeId)
+
     fun getChallengesForUser(userId: String): Flow<List<Challenge>> = challengeDao.getChallengesForUser(userId)
 
     suspend fun insertChallenge(challenge: Challenge) {
@@ -23,12 +25,7 @@ class ChallengeRepository(
     }
 
     suspend fun refreshChallenges() {
-        try {
-            val remoteChallenges = supabaseService.getAllChallenges()
-            remoteChallenges.forEach { challengeDao.insertChallenge(it) } // Update local cache
-        } catch (e: Exception) {
-            Log.e("ChallengeRepository", "Failed to refresh challenges", e)
-        }
+        // TODO: Implement this method
     }
 
     suspend fun deleteChallenge(challenge: Challenge) {

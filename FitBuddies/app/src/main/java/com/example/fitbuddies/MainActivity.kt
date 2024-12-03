@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FitBuddiesTheme {
-                var showOnboarding by remember { mutableStateOf(true) } // TODO: Save onboarding state shared preferences and change to true
+                var showOnboarding by remember { mutableStateOf(false) } // TODO: Save onboarding state shared preferences and change to true
 
                 if (showOnboarding) {
                     OnboardingScreen(

@@ -11,7 +11,7 @@ class ChallengeMediaRepository(
     private val supabaseService: SupabaseService
 ) {
 
-    fun getMediaByDare(dareId: String): Flow<List<ChallengeMedia>> = challengeMediaDao.getMediaByDare(dareId)
+    fun getMediaByChallenge(dareId: String): Flow<List<ChallengeMedia>> = challengeMediaDao.getMediaByChallenge(dareId)
 
     suspend fun insertMedia(media: ChallengeMedia) {
         challengeMediaDao.insertMedia(media) // Save locally first
