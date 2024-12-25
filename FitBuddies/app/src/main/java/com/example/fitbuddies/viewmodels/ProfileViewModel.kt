@@ -1,11 +1,9 @@
 package com.example.fitbuddies.viewmodels
 
 import androidx.lifecycle.ViewModel
-import androidx.room.PrimaryKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
 
 class ProfileViewModel : ViewModel() {
     private val _user = MutableStateFlow(

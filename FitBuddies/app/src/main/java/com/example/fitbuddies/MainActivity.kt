@@ -17,6 +17,11 @@ import com.example.fitbuddies.ui.components.NavigationItem
 import com.example.fitbuddies.ui.screens.*
 import com.example.fitbuddies.ui.theme.FitBuddiesTheme
 import com.example.fitbuddies.viewmodels.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 
 class MainActivity : ComponentActivity() {
@@ -24,16 +29,58 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FitBuddiesTheme {
-                var showOnboarding by remember { mutableStateOf(false) } // TODO: Save onboarding state shared preferences and change to true
+                var currentScreen by remember { mutableStateOf("onboarding") } // TODO: Save onboarding state shared preferences and change to true
+                var isAuthenticated by remember { mutableStateOf(false) }
+                val authenticationViewModel = viewModel<AuthenticationViewModel>()
 
-                if (showOnboarding) {
-                    OnboardingScreen(
-                        onFinishOnboarding = {
-                            showOnboarding = false
+                fun onSignIn(email: String, password: String) = runBlocking {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val response = authenticationViewModel.signIn(email, password)
+                        withContext(Dispatchers.Main) {
+                            if (response != null) isAuthenticated = true
                         }
-                    )
-                } else {
-                    MainScreen()
+                    }
+                    println("isAuthenticated: $isAuthenticated")
+                    println("currentScreen: $currentScreen")
+                }
+
+                fun onSignUp(firstName: String, lastName: String, email: String, password: String) = runBlocking {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val response = authenticationViewModel.signUp(firstName, lastName, email, password)
+                        withContext(Dispatchers.Main) {
+                            if (response != null) isAuthenticated = true
+                        }
+                    }
+                    println("isAuthenticated: $isAuthenticated")
+                    println("currentScreen: $currentScreen")
+                }
+
+                when {
+                    !isAuthenticated -> {
+                        when (currentScreen) {
+                            "onboarding" -> {
+                                OnboardingScreen { currentScreen = "sign in" }
+                            }
+                            "sign in" -> {
+                                SignInScreen(
+                                    onSignIn = { email, password -> onSignIn(email, password) },
+                                    onNavigateToSignUp = { currentScreen = "sign up" }
+                                )
+                            }
+                            "sign up" -> {
+                                SignUpScreen(
+                                    onSignUp = { firstName, lastName, email, password -> onSignUp(firstName, lastName, email, password) },
+                                    onNavigateToSignIn = { currentScreen = "sign in" }
+                                )
+                            }
+                            else -> {
+                                currentScreen = "onboarding"
+                            }
+                        }
+                    }
+                    else -> {
+                        MainScreen()
+                    }
                 }
             }
         }

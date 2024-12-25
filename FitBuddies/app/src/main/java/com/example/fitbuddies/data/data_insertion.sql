@@ -6,7 +6,7 @@ TRUNCATE TABLE friendships RESTART IDENTITY CASCADE;
 TRUNCATE TABLE users RESTART IDENTITY CASCADE;
 
 -- Insert 20 Users
-INSERT INTO users (user_id, email, password, first_name, last_name, challenges_completed, distance_traveled, calories_burned, profile_picture_url)
+INSERT INTO users (userId, email, password, firstName, lastName, challengesCompleted, distanceTraveled, caloriesBurned, profilePictureUrl)
 VALUES
 -- Main users
 (gen_random_uuid(), 'user1@example.com', 'password1', 'John', 'Doe', 10, 50.5, 1500, 'https://example.com/profiles/user1.jpg'),
@@ -33,27 +33,27 @@ VALUES
 
 -- Insert Friendships
 -- Main users are friends with each other
-INSERT INTO friendships (user_id, friend_id, is_accepted, creation_date)
+INSERT INTO friendships (userId, friendId, isAccepted, creationDate)
 VALUES
-((SELECT user_id FROM users WHERE email = 'user1@example.com'), (SELECT user_id FROM users WHERE email = 'user2@example.com'), TRUE, now()),
-((SELECT user_id FROM users WHERE email = 'user2@example.com'), (SELECT user_id FROM users WHERE email = 'user3@example.com'), TRUE, now()),
-((SELECT user_id FROM users WHERE email = 'user3@example.com'), (SELECT user_id FROM users WHERE email = 'user1@example.com'), TRUE, now());
+((SELECT userId FROM users WHERE email = 'user1@example.com'), (SELECT userId FROM users WHERE email = 'user2@example.com'), TRUE, now()),
+((SELECT userId FROM users WHERE email = 'user2@example.com'), (SELECT userId FROM users WHERE email = 'user3@example.com'), TRUE, now()),
+((SELECT userId FROM users WHERE email = 'user3@example.com'), (SELECT userId FROM users WHERE email = 'user1@example.com'), TRUE, now());
 
 -- Friendships between main users and other users
 DO $$
 DECLARE
-    main_users UUID[];
-    other_users UUID[];
-    main_user UUID;
-    other_user UUID;
+    mainUsers UUID[];
+    otherUsers UUID[];
+    mainUser UUID;
+    otherUser UUID;
 BEGIN
-    SELECT array_agg(user_id) INTO main_users FROM users WHERE email IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
-    SELECT array_agg(user_id) INTO other_users FROM users WHERE email NOT IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
+    SELECT array_agg(userId) INTO mainUsers FROM users WHERE email IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
+    SELECT array_agg(userId) INTO otherUsers FROM users WHERE email NOT IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
 
-    FOREACH main_user IN ARRAY main_users LOOP
-        FOREACH other_user IN ARRAY other_users LOOP
-            INSERT INTO friendships (user_id, friend_id, is_accepted, creation_date)
-            VALUES (main_user, other_user, (random() < 0.5), now());
+    FOREACH mainUser IN ARRAY mainUsers LOOP
+        FOREACH otherUser IN ARRAY otherUsers LOOP
+            INSERT INTO friendships (userId, friendId, isAccepted, creationDate)
+            VALUES (mainUser, otherUser, (random() < 0.5), now());
         END LOOP;
     END LOOP;
 END $$;
@@ -61,19 +61,19 @@ END $$;
 -- Insert Challenges
 DO $$
 DECLARE
-    main_users UUID[];
+    mainUsers UUID[];
     types TEXT[] := ARRAY['Cycling', 'Exercise', 'Running', 'Swimming', 'Walking'];
 BEGIN
-    SELECT array_agg(user_id) INTO main_users FROM users WHERE email IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
+    SELECT array_agg(userId) INTO mainUsers FROM users WHERE email IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
 
     FOR i IN 1..50 LOOP
-        INSERT INTO challenges (challenge_id, title, description, type, dared_by_id, creation_date, deadline_date)
+        INSERT INTO challenges (challengeId, title, description, type, daredById, creationDate, deadlineDate)
         VALUES (
             gen_random_uuid(),
             'Challenge ' || i,
             'This is challenge ' || i,
             types[(floor(random() * array_length(types, 1))::int) + 1],
-            main_users[(floor(random() * array_length(main_users, 1))::int) + 1],
+            mainUsers[(floor(random() * array_length(mainUsers, 1))::int) + 1],
             now(),
             now() + interval '7 days'
         );
@@ -85,21 +85,21 @@ DO $$
 DECLARE
     challenges UUID[];
     users UUID[];
-    challenge_index INT;
-    user_index INT;
+    challengeIndex INT;
+    userIndex INT;
 BEGIN
-    SELECT array_agg(challenge_id) INTO challenges FROM challenges;
-    SELECT array_agg(user_id) INTO users FROM users;
+    SELECT array_agg(challengeId) INTO challenges FROM challenges;
+    SELECT array_agg(userId) INTO users FROM users;
 
     FOR i IN 1..50 LOOP
-        challenge_index := floor(random() * array_length(challenges, 1) + 1)::int;
-        user_index := floor(random() * array_length(users, 1) + 1)::int;
+        challengeIndex := floor(random() * array_length(challenges, 1) + 1)::int;
+        userIndex := floor(random() * array_length(users, 1) + 1)::int;
 
-        INSERT INTO dares (dare_id, challenge_id, dared_to_id, is_accepted, is_completed, completion_date, completion_rate)
+        INSERT INTO dares (dareId, challengeId, daredToId, isAccepted, isCompleted, completionDate, completionRate)
         VALUES (
             gen_random_uuid(),
-            challenges[challenge_index],
-            users[user_index],
+            challenges[challengeIndex],
+            users[userIndex],
             (random() < 0.5), -- Boolean value
             (random() < 0.5), -- Boolean value
             now(),
@@ -108,25 +108,24 @@ BEGIN
     END LOOP;
 END $$;
 
--- All dares with isAccepted = false, must have isCompleted = false
-UPDATE dares SET is_completed = FALSE WHERE is_accepted = FALSE;
-
+-- Update all dares with isAccepted = false to ensure isCompleted = false
+UPDATE dares SET isCompleted = FALSE WHERE isAccepted = FALSE;
 
 -- Insert Challenge Media
 DO $$
 DECLARE
     challenges UUID[];
-    challenge_index INT;
+    challengeIndex INT;
 BEGIN
-    SELECT array_agg(challenge_id) INTO challenges FROM challenges;
+    SELECT array_agg(challengeId) INTO challenges FROM challenges;
 
     FOR i IN 1..150 LOOP
-        challenge_index := floor(random() * array_length(challenges, 1) + 1)::int;
+        challengeIndex := floor(random() * array_length(challenges, 1) + 1)::int;
 
-        INSERT INTO challenge_media (media_id, challenge_id, media_url, media_type, timestamp)
+        INSERT INTO challenge_media (mediaId, challengeId, mediaUrl, mediaType, timestamp)
         VALUES (
             gen_random_uuid(),
-            challenges[challenge_index],
+            challenges[challengeIndex],
             'https://example.com/media/challenge' || i || '.jpg',
             'PHOTO',
             now()

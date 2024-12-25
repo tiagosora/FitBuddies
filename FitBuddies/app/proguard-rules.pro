@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class io.github.jan.tennert.supabase.** { *; }
+-keepattributes Signature
+-dontwarn io.github.jan-tennert.supabase.**

@@ -1,41 +1,63 @@
 package com.example.fitbuddies.data.repositories
 
 import com.example.fitbuddies.data.models.User
-import com.example.fitbuddies.data.remote.SupabaseService
-import kotlinx.coroutines.flow.Flow
-import android.util.Log
-import com.example.fitbuddies.data.local.UserDao
+import com.example.fitbuddies.data.remote.Supabase.client
+import io.github.jan.supabase.postgrest.from
+import kotlinx.serialization.json.Json
 
 class UserRepository(
-    private val userDao: UserDao,
-    private val supabaseService: SupabaseService
 ) {
+    suspend fun getUserById(userId: String): User? {
+        val response = client.from("users").select {
+            filter {
+                eq("userId", userId)
+            }
+        }
 
-    val allUsers: Flow<List<User>> = userDao.getAllUsers()
-
-    suspend fun getUserById(userId: String): Flow<User?> {
-        return userDao.getUserById(userId)
-    }
-
-    suspend fun insertUser(user: User) {
-        userDao.insertUser(user) // Save locally first
         try {
-            supabaseService.insertUser(user) // Sync to Supabase
+            val decodedResponse: List<User> = Json.decodeFromString(response.data.toString())
+            val user : User? = decodedResponse.firstOrNull()
+            println("Decoded User: ${decodedResponse.firstOrNull()}")
+            return user
         } catch (e: Exception) {
-            Log.e("UserRepository", "Failed to sync user: ${user.userId}", e)
+            println("Deserialization Error: ${e.message}")
+            return null
         }
     }
 
-    suspend fun refreshUsers() {
-        // TODO: Implement this method
-    }
+    suspend fun authenticateUser(email: String, password: String): User? {
+        val response = client.from("users").select {
+            filter {
+                eq("email", email)
+                eq("password", password)
+            }
+        }
 
-    suspend fun deleteUser(user: User) {
-        userDao.deleteUser(user) // Remove locally
         try {
-            supabaseService.deleteUser(user.userId) // Delete remotely
+            val decodedResponse: List<User> = Json.decodeFromString(response.data.toString())
+            val user : User? = decodedResponse.firstOrNull()
+            println("Decoded User: ${decodedResponse.firstOrNull()}")
+            return user
         } catch (e: Exception) {
-            Log.e("UserRepository", "Failed to delete user: ${user.userId}", e)
+            println("Deserialization Error: ${e.message}")
+            return null
         }
     }
+
+    suspend fun insertUser(user: User): User? {
+        val response = client.from("users").insert(user) {
+            select()
+        }
+
+        try {
+            val decodedResponse: List<User> = Json.decodeFromString(response.data.toString())
+            val user : User? = decodedResponse.firstOrNull()
+            println("Decoded User: ${decodedResponse.firstOrNull()}")
+            return user
+        } catch (e: Exception) {
+            println("Deserialization Error: ${e.message}")
+            return null
+        }
+    }
+
 }
