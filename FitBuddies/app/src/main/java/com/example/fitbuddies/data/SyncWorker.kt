@@ -13,9 +13,9 @@ class SyncWorker(
 ) {
 
     suspend fun syncData() {
-        challengeRepository.refreshChallenges()
-        dareRepository.refreshDares()
-        friendshipRepository.refreshFriendships()
-        userRepository.refreshUsers()
+//        challengeRepository.refreshChallenges()
+//        dareRepository.refreshDares()
+//        friendshipRepository.refreshFriendships()
+//        userRepository.refreshUsers()
     }
 }
