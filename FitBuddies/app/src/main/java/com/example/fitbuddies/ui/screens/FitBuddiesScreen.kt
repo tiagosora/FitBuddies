@@ -17,12 +17,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.FitBuddiesViewModel
 import com.example.fitbuddies.viewmodels.FitBuddiesViewModel.FitBuddy
 import com.example.fitbuddies.viewmodels.FitBuddiesViewModel.FriendshipRequest
 
 @Composable
-fun FitBuddiesScreen(viewModel: FitBuddiesViewModel) {
+fun FitBuddiesScreen(
+    viewModel: FitBuddiesViewModel = hiltViewModel()
+) {
     val fitBuddies by viewModel.fitBuddies.collectAsState()
     val friendShipRequests by viewModel.friendShipRequests.collectAsState()
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }

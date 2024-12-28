@@ -10,7 +10,7 @@ class UserRepository(
     suspend fun getUserById(userId: String): User? {
         val response = client.from("users").select {
             filter {
-                eq("userId", userId)
+                eq("userid", userId)
             }
         }
 

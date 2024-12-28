@@ -11,33 +11,47 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fitbuddies.data.models.User
 import com.example.fitbuddies.ui.components.BottomNavigationBar
 import com.example.fitbuddies.ui.components.NavigationItem
 import com.example.fitbuddies.ui.screens.*
 import com.example.fitbuddies.ui.theme.FitBuddiesTheme
 import com.example.fitbuddies.viewmodels.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var sharedPreferences: android.content.SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val isOnboardingCompleted = sharedPreferences.getBoolean("onboarding_completed", false)
+
         setContent {
             FitBuddiesTheme {
-                var currentScreen by remember { mutableStateOf("onboarding") } // TODO: Save onboarding state shared preferences and change to true
+                var currentScreen by remember { mutableStateOf(if (isOnboardingCompleted) "sign in" else "onboarding") }
                 var isAuthenticated by remember { mutableStateOf(false) }
                 val authenticationViewModel = viewModel<AuthenticationViewModel>()
 
                 fun onSignIn(email: String, password: String) = runBlocking {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val response = authenticationViewModel.signIn(email, password)
+                        val response: User? = authenticationViewModel.signIn(email, password)
                         withContext(Dispatchers.Main) {
-                            if (response != null) isAuthenticated = true
+                            if (response != null) {
+                                isAuthenticated = true
+                                sharedPreferences.edit().putString("currentUserId", response.userId).apply()
+                            }
                         }
                     }
                     println("isAuthenticated: $isAuthenticated")
@@ -46,20 +60,28 @@ class MainActivity : ComponentActivity() {
 
                 fun onSignUp(firstName: String, lastName: String, email: String, password: String) = runBlocking {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val response = authenticationViewModel.signUp(firstName, lastName, email, password)
+                        val response: User? = authenticationViewModel.signUp(firstName, lastName, email, password)
                         withContext(Dispatchers.Main) {
-                            if (response != null) isAuthenticated = true
+                            if (response != null) {
+                                isAuthenticated = true
+                                sharedPreferences.edit().putString("currentUserId", response.userId).apply()
+                            }
                         }
                     }
                     println("isAuthenticated: $isAuthenticated")
                     println("currentScreen: $currentScreen")
                 }
 
+                fun completeOnboarding() {
+                    sharedPreferences.edit().putBoolean("onboarding_completed", true).apply()
+                    currentScreen = "sign in"
+                }
+
                 when {
                     !isAuthenticated -> {
                         when (currentScreen) {
                             "onboarding" -> {
-                                OnboardingScreen { currentScreen = "sign in" }
+                                OnboardingScreen { completeOnboarding() }
                             }
                             "sign in" -> {
                                 SignInScreen(
@@ -90,12 +112,11 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    profileViewModel: ProfileViewModel = hiltViewModel()
+) {
     var currentRoute by remember { mutableStateOf(NavigationItem.Home.route) }
-    val homeViewModel = viewModel<HomeViewModel>()
-    val friendsViewModel = viewModel<FitBuddiesViewModel>()
-    val challengesViewModel = viewModel<ChallengesViewModel>()
-    val profileViewModel = viewModel<ProfileViewModel>()
+    val user by profileViewModel.user.collectAsState()
 
     Scaffold(
         topBar = {
@@ -109,7 +130,7 @@ fun MainScreen() {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "${profileViewModel.user.value.firstName} ${profileViewModel.user.value.lastName}",
+                            text = "${user?.firstName} ${user?.lastName}",
                             style = MaterialTheme.typography.titleLarge
                         )
                     }
@@ -142,12 +163,12 @@ fun MainScreen() {
                 .padding(top = innerPadding.calculateTopPadding())
         ) {
             when (currentRoute) {
-                NavigationItem.Home.route -> HomeScreen(homeViewModel)
-                NavigationItem.Friends.route -> FitBuddiesScreen(friendsViewModel)
-                NavigationItem.Challenges.route -> ChallengesScreen(challengesViewModel)
-                NavigationItem.Profile.route -> ProfileScreen(profileViewModel)
+                NavigationItem.Home.route -> HomeScreen()
+                NavigationItem.Friends.route -> FitBuddiesScreen()
+                NavigationItem.Challenges.route -> ChallengesScreen()
+                NavigationItem.Profile.route -> ProfileScreen()
                 NavigationItem.Add.route -> AddChallengeScreen()
-                else -> HomeScreen(homeViewModel)
+                else -> HomeScreen()
             }
         }
     }

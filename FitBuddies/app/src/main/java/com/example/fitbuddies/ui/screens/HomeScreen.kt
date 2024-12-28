@@ -19,12 +19,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.HomeViewModel
 import com.example.fitbuddies.viewmodels.HomeViewModel.ActiveChallenge
 import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
 
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel) {
+fun HomeScreen(
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
     val activeChallenges by homeViewModel.activeChallenges.collectAsState()
     val fitBuddiesChallenges by homeViewModel.fitBuddiesChallenges.collectAsState()
 

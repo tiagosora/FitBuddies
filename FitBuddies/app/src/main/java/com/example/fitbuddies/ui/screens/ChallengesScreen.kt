@@ -19,11 +19,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.ChallengesViewModel
 import org.burnoutcrew.reorderable.*
 
 @Composable
-fun ChallengesScreen(viewModel: ChallengesViewModel) {
+fun ChallengesScreen(
+    viewModel: ChallengesViewModel = hiltViewModel()
+) {
     val pendingChallenges by viewModel.pendingChallenges.collectAsState()
     val acceptedChallenges by viewModel.acceptedChallenges.collectAsState()
 
