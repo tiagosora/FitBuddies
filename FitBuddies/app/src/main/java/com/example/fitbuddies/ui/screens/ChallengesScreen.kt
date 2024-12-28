@@ -33,7 +33,6 @@ fun ChallengesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         Text(
             "Challenges",
@@ -100,7 +99,7 @@ fun ChallengesScreen(
 
 @Composable
 fun PendingChallengeItem(
-    challenge: ChallengesViewModel.Challenge,
+    challenge: ChallengesViewModel.ChallengeInfo,
     onAccept: () -> Unit,
     onDeny: () -> Unit
 ) {
@@ -176,7 +175,7 @@ fun PendingChallengeItem(
 
 @Composable
 fun AcceptedChallengeItem(
-    challenge: ChallengesViewModel.Challenge,
+    challenge: ChallengesViewModel.ChallengeInfo,
     modifier: Modifier = Modifier,
     elevation: Dp = 0.dp
 ) {

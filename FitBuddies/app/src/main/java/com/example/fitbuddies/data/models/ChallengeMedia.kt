@@ -19,7 +19,7 @@ data class ChallengeMedia(
     @SerialName("challengeid") val challengeId: String,
     @SerialName("mediaurl") val mediaUrl: String,
     @SerialName("mediatype") val mediaType: MediaType,
-    @SerialName("timestamp") val timestamp: Long = System.currentTimeMillis()
+    @SerialName("timestamp") val timestamp: String = System.currentTimeMillis().toString()
 )
 
 

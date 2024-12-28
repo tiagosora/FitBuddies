@@ -25,12 +25,11 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val user by profileViewModel.user.collectAsState()
-    val challenges by profileViewModel.challenges.collectAsState()
+    val challenges by profileViewModel.userCompletedChallenges.collectAsState()
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         item {
             ProfileHeader(
@@ -260,7 +259,7 @@ fun GoalProgressBar(icon: ImageVector, current: Int, goal: Int, label: String) {
 }
 
 @Composable
-fun ChallengeItem(challenge: ProfileViewModel.Challenge) {
+fun ChallengeItem(challenge: ProfileViewModel.ChallengeInfo) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)

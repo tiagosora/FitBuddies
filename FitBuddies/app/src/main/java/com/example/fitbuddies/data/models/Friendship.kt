@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 )
 data class Friendship(
     @SerialName("userid") val userId: String,
-    @SerialName("friend_id") val friendId: String,
-    @SerialName("is_accepted") val isAccepted: Boolean = false,
-    @SerialName("creationdate") val creationDate: Long = System.currentTimeMillis()
+    @SerialName("friendid") val friendId: String,
+    @SerialName("isaccepted") val isAccepted: Boolean = false,
+    @SerialName("creationdate") val creationDate: String = System.currentTimeMillis().toString()
 )

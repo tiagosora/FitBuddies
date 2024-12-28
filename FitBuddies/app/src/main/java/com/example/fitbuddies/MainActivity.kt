@@ -41,7 +41,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             FitBuddiesTheme {
                 var currentScreen by remember { mutableStateOf(if (isOnboardingCompleted) "sign in" else "onboarding") }
-                var isAuthenticated by remember { mutableStateOf(false) }
+
+//                var isAuthenticated by remember { mutableStateOf(false) }
+                var isAuthenticated by remember { mutableStateOf(true) }
+                sharedPreferences.edit().putString("currentUserId", "2eef40fc-3223-4bb2-8003-6af0e45dfc53").apply()
+
                 val authenticationViewModel = viewModel<AuthenticationViewModel>()
 
                 fun onSignIn(email: String, password: String) = runBlocking {
@@ -160,7 +164,12 @@ fun MainScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding())
+                .padding(
+                    start = 32.dp,
+                    end = 32.dp,
+                    top = innerPadding.calculateTopPadding() + 16.dp,
+                    bottom = innerPadding.calculateBottomPadding()
+                )
         ) {
             when (currentRoute) {
                 NavigationItem.Home.route -> HomeScreen()

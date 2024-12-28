@@ -33,7 +33,6 @@ fun FitBuddiesScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         item {
             OutlinedTextField(
@@ -204,7 +203,7 @@ fun FitBuddyItem(fitBuddy: FitBuddy, onChallenge: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = fitBuddy.status,
+                    text = fitBuddy.numberOfCompletedChallenges.toString() + " challenges completed",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

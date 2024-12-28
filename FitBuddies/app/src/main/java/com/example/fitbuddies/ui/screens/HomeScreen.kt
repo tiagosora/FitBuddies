@@ -34,7 +34,6 @@ fun HomeScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         item {
             DailyActivitySummary(homeViewModel)
@@ -170,7 +169,7 @@ fun ActiveChallengeCard(challenge: ActiveChallenge) {
 fun FitBuddyChallengeItem(fitBuddyChallenge: FitBuddyChallenge) {
     ListItem(
         headlineContent = { Text(fitBuddyChallenge.fitBuddyName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold) },
-        supportingContent = { Text(fitBuddyChallenge.lastChallengeDescription, style = MaterialTheme.typography.bodySmall) },
+        supportingContent = { Text(fitBuddyChallenge.lastChallengeTitle, style = MaterialTheme.typography.bodySmall) },
         leadingContent = {
             Surface(
                 modifier = Modifier

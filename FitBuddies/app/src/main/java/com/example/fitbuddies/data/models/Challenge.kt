@@ -20,6 +20,6 @@ data class Challenge(
     @SerialName("description") val description: String,
     @SerialName("type") val type: String,
     @SerialName("daredbyid") val daredById: String,
-    @SerialName("creationdate") val creationDate: Long = System.currentTimeMillis(),
-    @SerialName("deadlinedate") val deadlineDate: Long? = null
+    @SerialName("creationdate") val creationDate: String = System.currentTimeMillis().toString(),
+    @SerialName("deadlinedate") val deadlineDate: String? = null
 )

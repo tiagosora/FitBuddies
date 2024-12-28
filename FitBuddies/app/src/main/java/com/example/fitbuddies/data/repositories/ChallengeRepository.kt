@@ -1,62 +1,48 @@
 package com.example.fitbuddies.data.repositories
 
-import com.example.fitbuddies.data.models.Challenge
-import com.example.fitbuddies.data.local.ChallengeDao
-import kotlinx.coroutines.flow.Flow
-import android.util.Log
 import com.example.fitbuddies.data.remote.Supabase.client
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.rpc
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-class ChallengeRepository(
-    private val challengeDao: ChallengeDao,
-) {
-
-    suspend fun getChallengeById(challengeId: String): Flow<Challenge?> = challengeDao.getChallengeById(challengeId)
-
-    fun getChallengesForUser(userId: String): Flow<List<Challenge>> = challengeDao.getChallengesForUser(userId)
-
-    suspend fun insertChallenge(challenge: Challenge) {
-        challengeDao.insertChallenge(challenge) // Save locally first
-        try {
-            // supabaseService.insertChallenge(challenge) // Sync to Supabase
-        } catch (e: Exception) {
-            Log.e("ChallengeRepository", "Failed to sync challenge: ${challenge.challengeId}", e)
-        }
-    }
-
-    suspend fun getActiveUserChallenges(userId: String): List<Map<String, Any>> {
+class ChallengeRepository() {
+    suspend fun getActiveUserChallenges(userId: String): List<DareToChallengeResponse> {
 
         val columns = Columns.raw("""
-            dare_id,
-            is_accepted,
-            is_completed,
-            completion_date,
-            completion_rate,
-            challenges:challenge_id (
-                challenge_id,
+            dareid,
+            isaccepted,
+            iscompleted,
+            completiondate,
+            completionrate,
+            challenges:challengeid (
+                challengeid,
                 title,
                 description,
                 type,
-                dared_by_id,
-                creation_date,
-                deadline_date
+                daredbyid,
+                creationdate,
+                deadlinedate
             )
         """.trimIndent())
         val response = client.from("dares").select(
             columns = columns
         ) {
             filter {
-                eq("dared_by_id", userId)
-                eq("is_accepted", true)
-                eq("is_completed", false)
+                and {
+                    eq("daredtoid", userId)
+                    eq("isaccepted", true)
+                    eq("iscompleted", false)
+                }
             }
         }
 
         try {
-            val decodedResponse: List<Map<String, Any>> = Json.decodeFromString(response.data.toString())
-            println("Decoded Active User Challenges: $decodedResponse")
+//            println("Requested Challenges Response: ${response.data}")
+            val decodedResponse: List<DareToChallengeResponse> = Json.decodeFromString(response.data)
+//            println("Decoded Active Challenges: $decodedResponse")
             return decodedResponse
         } catch (e: Exception) {
             println("Deserialization Error: ${e.message}")
@@ -64,37 +50,39 @@ class ChallengeRepository(
         }
     }
 
-    suspend fun getRequestedUserChallenges(userId: String): List<Map<String, Any>> {
+    suspend fun getRequestedUserChallenges(userId: String): List<DareToChallengeResponse> {
 
         val columns = Columns.raw("""
-            dare_id,
-            is_accepted,
-            is_completed,
-            completion_date,
-            completion_rate,
-            challenges:challenge_id (
-                challenge_id,
+            dareid,
+            isaccepted,
+            iscompleted,
+            completiondate,
+            completionrate,
+            challenges:challengeid (
+                challengeid,
                 title,
                 description,
                 type,
-                dared_by_id,
-                creation_date,
-                deadline_date
+                daredbyid,
+                creationdate,
+                deadlinedate
             )
         """.trimIndent())
         val response = client.from("dares").select(
             columns = columns
         ) {
             filter {
-                eq("dared_by_id", userId)
-                eq("is_accepted", false)
-                eq("is_completed", false)
+                and {
+                    eq("daredtoid", userId)
+                    eq("isaccepted", false)
+                }
             }
         }
 
         try {
-            val decodedResponse: List<Map<String, Any>> = Json.decodeFromString(response.data.toString())
-            println("Decoded Requested User Challenges: $decodedResponse")
+//            println("Requested Challenges Response: ${response.data}")
+            val decodedResponse: List<DareToChallengeResponse> = Json.decodeFromString(response.data)
+//            println("Decoded Requested Challenges: $decodedResponse")
             return decodedResponse
         } catch (e: Exception) {
             println("Deserialization Error: ${e.message}")
@@ -102,13 +90,100 @@ class ChallengeRepository(
         }
     }
 
+    suspend fun getUserCompletedChallenges(userId: String): List<DareToChallengeResponse> {
 
-    suspend fun deleteChallenge(challenge: Challenge) {
-        challengeDao.deleteChallenge(challenge) // Remove locally
+        val columns = Columns.raw("""
+            dareid,
+            isaccepted,
+            iscompleted,
+            completiondate,
+            completionrate,
+            challenges:challengeid (
+                challengeid,
+                title,
+                description,
+                type,
+                daredbyid,
+                creationdate,
+                deadlinedate
+            )
+        """.trimIndent())
+        val response = client.from("dares").select(
+            columns = columns
+        ) {
+            filter {
+                and {
+                    eq("daredtoid", userId)
+                    eq("iscompleted", true)
+                }
+            }
+        }
+
         try {
-            //  supabaseService.deleteChallenge(challenge.challengeId) // Delete remotely
+//            println("Requested Challenges Response: ${response.data}")
+            val decodedResponse: List<DareToChallengeResponse> = Json.decodeFromString(response.data)
+//            println("Decoded Requested Challenges: $decodedResponse")
+            return decodedResponse
         } catch (e: Exception) {
-            Log.e("ChallengeRepository", "Failed to delete challenge: ${challenge.challengeId}", e)
+            println("Deserialization Error: ${e.message}")
+            return emptyList()
         }
     }
+
+    suspend fun getFitBuddiesChallenges(userFitBuddiesIds: List<String>): List<FitBuddyLastCompletedChallenge> {
+
+        try {
+            val response = client.postgrest.rpc(
+                // Used a stored Procedure
+                function = "get_last_completed_challenges",
+                parameters = mapOf("fitbuddies_ids" to userFitBuddiesIds)
+            )
+//            println("Requested Challenges Response: ${response.data}")
+            val decodedResponse: List<FitBuddyLastCompletedChallenge> = Json.decodeFromString(response.data)
+//            println("Decoded Requested Challenges: $decodedResponse")
+            return decodedResponse
+        } catch (e: Exception) {
+            println("Deserialization Error: ${e.message}")
+            return emptyList()
+        }
+    }
+
+    @Serializable
+    data class ChallengeDetails(
+        val challengeid: String = "",
+        val title: String = "",
+        val description: String = "",
+        val type: String = "",
+        val daredbyid: String = "",
+        val creationdate: String = "",
+        val deadlinedate: String = ""
+    )
+
+    @Serializable
+    data class DareToChallengeResponse(
+        val dareid: String = "",
+        val isaccepted: Boolean = false,
+        val iscompleted: Boolean = false,
+        val completiondate: String = "",
+        val completionrate: Float = 0.0f,
+        val challenges: ChallengeDetails = ChallengeDetails()
+    )
+
+    @Serializable
+    data class FitBuddyLastCompletedChallenge(
+        val dareid: String,
+        val daredtoid: String,
+        val isaccepted: Boolean,
+        val iscompleted: Boolean,
+        val completiondate: String,
+        val completionrate: Float,
+        val challengeid: String,
+        val title: String,
+        val description: String,
+        val type: String,
+        val daredbyid: String,
+        val creationdate: String,
+        val deadlinedate: String
+    )
 }
+

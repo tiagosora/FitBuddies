@@ -2,6 +2,8 @@ package com.example.fitbuddies.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.fitbuddies.data.repositories.ChallengeRepository
+import com.example.fitbuddies.data.repositories.FriendshipRepository
 import com.example.fitbuddies.data.repositories.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -31,6 +33,18 @@ object AppModule {
     }
 
     // Repositories
+
+    @Provides
+    @Singleton
+    fun provideChallengeRepository(): ChallengeRepository {
+        return ChallengeRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFriendshipRepository(): FriendshipRepository {
+        return FriendshipRepository()
+    }
 
     @Provides
     @Singleton
