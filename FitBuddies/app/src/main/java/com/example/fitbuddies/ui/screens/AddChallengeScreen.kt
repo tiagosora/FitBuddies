@@ -117,7 +117,7 @@ fun AddChallengeScreen(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                listOf("Running", "Cycling", "Weightlifting", "Yoga").forEach { type ->
+                listOf("Running", "Cycling", "Weightlifting", "Yoga", "Other").forEach { type ->
                     DropdownMenuItem(
                         text = { Text(type) },
                         onClick = {
