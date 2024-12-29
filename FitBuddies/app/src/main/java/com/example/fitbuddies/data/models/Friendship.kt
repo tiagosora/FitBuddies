@@ -2,7 +2,10 @@ package com.example.fitbuddies.data.models
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(
     tableName = "friendships",
     primaryKeys = ["userId", "friendId"],
@@ -12,7 +15,8 @@ import androidx.room.ForeignKey
     ]
 )
 data class Friendship(
-    val userId: String,
-    val friendId: String,
-    val isAccepted: Boolean = false
+    @SerialName("userid") val userId: String,
+    @SerialName("friendid") val friendId: String,
+    @SerialName("isaccepted") val isAccepted: Boolean = false,
+    @SerialName("creationdate") val creationDate: String = System.currentTimeMillis().toString()
 )

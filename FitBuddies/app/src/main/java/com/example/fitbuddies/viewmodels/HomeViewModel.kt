@@ -1,43 +1,75 @@
 package com.example.fitbuddies.viewmodels
 
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fitbuddies.data.models.User
+import com.example.fitbuddies.data.repositories.ChallengeRepository
+import com.example.fitbuddies.data.repositories.ChallengeRepository.DareToChallengeResponse
+import com.example.fitbuddies.data.repositories.ChallengeRepository.FitBuddyLastCompletedChallenge
+import com.example.fitbuddies.data.repositories.FriendshipRepository
+import com.example.fitbuddies.data.repositories.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HomeViewModel : ViewModel() {
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val sharedPreferences: SharedPreferences,
+    private val userRepository: UserRepository,
+    private val friendshipRepository: FriendshipRepository,
+    private val challengeRepository: ChallengeRepository
+): ViewModel() {
 
-    val dailySteps: Int = 8234
+    val dailySteps: Int = 8234 // TODO: Get daily steps from Watch API
 
     private val _activeChallenges = MutableStateFlow<List<ActiveChallenge>>(emptyList())
-    val activeChallenges: StateFlow<List<ActiveChallenge>> = _activeChallenges
+    val activeChallenges: StateFlow<List<ActiveChallenge>> = _activeChallenges.asStateFlow()
 
     private val _fitBuddiesChallenges = MutableStateFlow<List<FitBuddyChallenge>>(emptyList())
-    val fitBuddiesChallenges: StateFlow<List<FitBuddyChallenge>> = _fitBuddiesChallenges
+    val fitBuddiesChallenges: StateFlow<List<FitBuddyChallenge>> = _fitBuddiesChallenges.asStateFlow()
 
     init {
-        // TODO: Replace with actual data fetching
-        _activeChallenges.value = listOf(
-            ActiveChallenge("30 Day Plank", "Exercise", "Do a plank every day for 30 days"),
-            ActiveChallenge("5K Run", "Running", "Train and complete a 5K run"),
-            ActiveChallenge("100 Push-ups", "Exercise", "Do 100 push-ups in one day")
-        )
-
-        _fitBuddiesChallenges.value = listOf(
-            FitBuddyChallenge("Jane Doe", "Cycling", "Cycling with Jane"),
-            FitBuddyChallenge("John Smith", "Running", "Running with John"),
-            FitBuddyChallenge("Alice Johnson", "Yoga", "Yoga session with Alice"),
-            FitBuddyChallenge("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
-            FitBuddyChallenge("Jane Doe", "Cycling", "Cycling with Jane"),
-            FitBuddyChallenge("John Smith", "Running", "Running with John"),
-            FitBuddyChallenge("Alice Johnson", "Yoga", "Yoga session with Alice"),
-            FitBuddyChallenge("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
-            FitBuddyChallenge("Jane Doe", "Cycling", "Cycling with Jane"),
-            FitBuddyChallenge("John Smith", "Running", "Running with John"),
-            FitBuddyChallenge("Alice Johnson", "Yoga", "Yoga session with Alice"),
-            FitBuddyChallenge("Bob Brown", "Weightlifting", "Weightlifting with Bob"),
-        )
+        fetchActiveChallenges()
+        fetchFitBuddiesChallenges()
     }
-}
 
-data class ActiveChallenge(val title: String, val type: String, val description: String, val completionRate: Float = 0.0f)
-data class FitBuddyChallenge(val fitBuddyName: String, val lastChallengeType: String, val lastChallengeDescription: String)
+    private fun fetchActiveChallenges() {
+        viewModelScope.launch {
+            val userId = sharedPreferences.getString("currentUserId", null)
+            if (userId != null) {
+                val activeChallengesData : List<DareToChallengeResponse> = challengeRepository.getActiveUserChallenges(userId)
+                _activeChallenges.value = activeChallengesData.map {
+                    ActiveChallenge(it.challenges.challengeid, it.challenges.title, it.challenges.type, it.challenges.description)
+                }
+            }
+//            println("Active Challenges: ${_activeChallenges.value}")
+        }
+    }
+
+    private fun fetchFitBuddiesChallenges() {
+        viewModelScope.launch {
+            val userId = sharedPreferences.getString("currentUserId", null)
+            if (userId != null) {
+                val userFitBuddiesIds: List<String> = friendshipRepository.getUserAcceptedFriendships(userId).map {
+                    if (it.userId == userId) { it.friendId }
+                    else { it.userId }
+                }
+                val fitBuddies: List<User> = userRepository.getUsersByIds(userFitBuddiesIds)
+//                println("User Fit Buddies: $userFitBuddies")
+                val fitBuddiesChallengesData: List<FitBuddyLastCompletedChallenge> = challengeRepository.getFitBuddiesChallenges(userFitBuddiesIds)
+                _fitBuddiesChallenges.value = fitBuddiesChallengesData.map {
+                    val fitBuddy = fitBuddies.find { fitBuddy -> fitBuddy.userId == it.daredtoid }!!
+                    FitBuddyChallenge(it.challengeid, it.daredtoid, "${fitBuddy.firstName} ${fitBuddy.lastName}", it.type, it.title)
+                }
+//                println("Fit Buddies Challenges: $fitBuddiesChallengesData")
+            }
+        }
+    }
+
+    data class ActiveChallenge(val challengeId: String, val title: String, val type: String, val description: String, val completionRate: Float = 0.0f)
+    data class FitBuddyChallenge(val challengeId: String, val fitBuddyId: String,val fitBuddyName: String, val lastChallengeType: String, val lastChallengeTitle: String)
+}

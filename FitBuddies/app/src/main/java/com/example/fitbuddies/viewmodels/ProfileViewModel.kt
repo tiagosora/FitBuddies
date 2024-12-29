@@ -1,58 +1,72 @@
 package com.example.fitbuddies.viewmodels
 
+import android.content.SharedPreferences
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.room.PrimaryKey
+import androidx.lifecycle.viewModelScope
+import com.example.fitbuddies.data.models.User
+import com.example.fitbuddies.data.repositories.ChallengeRepository
+import com.example.fitbuddies.data.repositories.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlin.math.pow
 
-class ProfileViewModel : ViewModel() {
-    private val _user = MutableStateFlow(
-        User(
-            firstName = "John",
-            lastName = "Doe",
-            email = "john.doe@example.com",
-            profilePictureUrl = "",
-            challengesCompleted = 42,
-            distanceTraveled = 35.00,
-            caloriesBurned = 8627,
-        )
-    )
-    val user: StateFlow<User> = _user.asStateFlow()
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val sharedPreferences: SharedPreferences,
+    private val userRepository: UserRepository,
+    private val challengeRepository: ChallengeRepository
+) : ViewModel() {
 
-    private val _challenges = MutableStateFlow(
-        listOf(
-            Challenge(title = "30 Day Plank", type = "Exercise", date = "2021-09-01", description = "Do a plank every day for 30 days"),
-            Challenge(title = "5K Run", type = "Running", date = "2021-09-01", description = "Train and complete a 5K run"),
-            Challenge(title = "5K Bicycling", type = "Bicycling", date = "2021-09-01", description = "Train and complete a 5K bicycling"),
-            Challenge(title = "100 Push-ups", type = "Exercise", date = "2021-09-01", description = "Do 100 push-ups in one day"),
-            Challenge(title = "100 Squats", type = "Exercise", date = "2021-09-01", description = "Do 100 squats in one day"),
-            Challenge(title = "100 Sit-ups", type = "Exercise", date = "2021-09-01", description = "Do 100 sit-ups in one day"),
-        )
-    )
-    val challenges: StateFlow<List<Challenge>> = _challenges.asStateFlow()
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> = _user.asStateFlow()
 
-    // List of numbers of goals to be completed
-    val challengesGoals = listOf(5, 10, 15, 20, 25, 30, 35, 40, 45, 50)
-    val distanceGoals = listOf(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
-    val caloriesGoals = listOf(1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000)
+    private val _userCompletedChallenges = MutableStateFlow<List<ChallengeInfo>>(emptyList())
+    val userCompletedChallenges: StateFlow<List<ChallengeInfo>> = _userCompletedChallenges.asStateFlow()
 
-    data class User(
-        val email: String,
-        val firstName: String,
-        val lastName: String,
-        val challengesCompleted: Int,
-        val distanceTraveled: Double,
-        val caloriesBurned: Int,
-        val profilePictureUrl: String? = null
-    )
+    init {
+        fetchUser()
+        fetchUserCompletedChallenges()
+    }
 
-    data class Challenge(
-        val title: String,
-        val type: String,
-        val date: String,
-        val description: String
-    )
+    private fun fetchUser() {
+        viewModelScope.launch {
+            val userId = sharedPreferences.getString("currentUserId", null)
+            if (userId != null) {
+                val userData = userRepository.getUserById(userId)
+                _user.value = userData
+            }
+        }
+    }
+
+    private fun fetchUserCompletedChallenges() {
+        viewModelScope.launch {
+            val userId = sharedPreferences.getString("currentUserId", null)
+            if (userId != null) {
+                val userCompletedChallengesData = challengeRepository.getUserCompletedChallenges(userId)
+                _userCompletedChallenges.value = userCompletedChallengesData.map {
+                    ChallengeInfo(it.challenges.title, it.challenges.type, it.completiondate.substring(0..9), it.challenges.description)
+                }
+            }
+        }
+    }
+
+    val baseChallengesGoal = 5
+    val challengeGrowthRate = 1.5
+    val baseDistanceGoal = 10
+    val distanceGrowthRate = 1.3
+    val baseCaloriesGoal = 1000
+    val calorieGrowthRate = 1.4
+
+    val numberOfLevels = 20
+    val challengesGoals = (1..numberOfLevels).map { level -> (baseChallengesGoal * challengeGrowthRate.pow((level - 1).toDouble())).toInt() }
+    val distanceGoals = (1..numberOfLevels).map { level -> (baseDistanceGoal * distanceGrowthRate.pow((level - 1).toDouble())).toInt() }
+    val caloriesGoals = (1..numberOfLevels).map { level -> (baseCaloriesGoal * calorieGrowthRate.pow((level - 1).toDouble())).toInt() }
+
+    data class ChallengeInfo(val title: String, val type: String, val date: String, val description: String)
 }
 

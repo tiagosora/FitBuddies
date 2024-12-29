@@ -1,41 +1,64 @@
 package com.example.fitbuddies.viewmodels
 
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.fitbuddies.data.repositories.FriendshipRepository
+import com.example.fitbuddies.data.repositories.FriendshipRepository.RequestedFriendshipResponse
+import com.example.fitbuddies.data.repositories.FriendshipRepository.FitBuddyCountChallenges
+//import com.example.fitbuddies.data.repositories.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class FitBuddiesViewModel : ViewModel() {
-    private val _fitBuddies = MutableStateFlow<List<FitBuddy>>(
-        listOf(
-            FitBuddy("John Doe", "Online"),
-            FitBuddy("Jane Smith", "Last seen 2 hours ago"),
-            FitBuddy("Mike Johnson", "Last seen 1 day ago"),
-            FitBuddy("Alice Brown", "Online"),
-            FitBuddy("Bob White", "Last seen 3 days ago"),
-            FitBuddy("Emily Green", "Last seen 1 week ago"),
-            FitBuddy("Chris Black", "Online"),
-            FitBuddy("Sarah Blue", "Last seen 2 weeks ago"),
-            FitBuddy("Tom Grey", "Last seen 1 month ago"),
-            FitBuddy("Laura Orange", "Online"),
-        )
-    )
-    val fitBuddies: StateFlow<List<FitBuddy>> = _fitBuddies
+@HiltViewModel
+class FitBuddiesViewModel @Inject constructor(
+    private val sharedPreferences: SharedPreferences,
+//    private val userRepository: UserRepository,
+    private val friendshipRepository: FriendshipRepository
+): ViewModel() {
 
-    private val _friendShipRequests = MutableStateFlow<List<FriendshipRequest>>(
-        listOf(
-            FriendshipRequest("Alice Brown"),
-            FriendshipRequest("Bob White")
-        )
-    )
-    val friendShipRequests: StateFlow<List<FriendshipRequest>> = _friendShipRequests
+    private val _friendShipRequests = MutableStateFlow<List<FriendshipRequest>>(emptyList())
+    val friendShipRequests: StateFlow<List<FriendshipRequest>> = _friendShipRequests.asStateFlow()
+
+    private val _fitBuddies = MutableStateFlow<List<FitBuddy>>(emptyList())
+    val fitBuddies: StateFlow<List<FitBuddy>> = _fitBuddies.asStateFlow()
+
+    init {
+        fetchFriendshipRequests()
+        fetchFitBuddies()
+    }
+
+    private fun fetchFriendshipRequests() {
+        viewModelScope.launch {
+            val userId = sharedPreferences.getString("currentUserId", null)
+            if (userId != null) {
+                val friendshipRequestsData: List<RequestedFriendshipResponse> = friendshipRepository.getUserFriendshipRequests(userId)
+                _friendShipRequests.value = friendshipRequestsData.map {
+                    FriendshipRequest(it.users.userid, "${it.users.firstname} ${it.users.lastname}", it.users.profilepictureurl)
+                }
+            }
+        }
+    }
+
+    private fun fetchFitBuddies() {
+        viewModelScope.launch {
+            val userId = sharedPreferences.getString("currentUserId", null)
+            if (userId != null) {
+                val fitBuddiesDetailsWithChallenges: List<FitBuddyCountChallenges> = friendshipRepository.getFitBuddiesDetailsWitCountChallenges(userId)
+                _fitBuddies.value = fitBuddiesDetailsWithChallenges.map {
+                    FitBuddy(it.fitbuddyid, "${it.firstname} ${it.lastname}", it.challengescompletedcount, it.profilepictureurl)
+                }
+            }
+            println(_fitBuddies.value)
+            _fitBuddies.value = _fitBuddies.value.sortedByDescending { it.numberOfCompletedChallenges }
+        }
+    }
+
+    data class FitBuddy(val id: String, val name: String, val numberOfCompletedChallenges: Int = 0, val profilePictureUrl: String = "")
+    data class FriendshipRequest(val id: String, val name: String, val profilePictureUrl: String = "")
 }
 
-data class FitBuddy(
-    val name: String,
-    val status: String, // e.g., "Online", "Last seen 2 hours ago"
-    val profilePictureUrl: String = "",
-)
-
-data class FriendshipRequest(
-    val name: String,
-)

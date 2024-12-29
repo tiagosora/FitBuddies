@@ -17,23 +17,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.ProfileViewModel
 
 @Composable
-fun ProfileScreen(profileViewModel: ProfileViewModel) {
+fun ProfileScreen(
+    profileViewModel: ProfileViewModel = hiltViewModel()
+) {
     val user by profileViewModel.user.collectAsState()
-    val challenges by profileViewModel.challenges.collectAsState()
+    val challenges by profileViewModel.userCompletedChallenges.collectAsState()
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         item {
             ProfileHeader(
-                name = "${user.firstName} ${user.lastName}",
-                email = user.email,
-                profilePictureUrl = user.profilePictureUrl ?: ""
+                name = "${user?.firstName} ${user?.lastName}",
+                email = user?.email ?: "",
+                profilePictureUrl = user?.profilePictureUrl ?: ""
             )
         }
         item { Spacer(modifier = Modifier.height(8.dp)) }
@@ -63,18 +65,18 @@ fun ProfileScreen(profileViewModel: ProfileViewModel) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
         item {
             FitnessStatsSection(
-                challengesCompleted = user.challengesCompleted,
-                distanceTraveled = user.distanceTraveled,
-                caloriesBurned = user.caloriesBurned
+                challengesCompleted = user?.challengesCompleted ?: 0,
+                distanceTraveled = user?.distanceTraveled ?: 0.0,
+                caloriesBurned = user?.caloriesBurned ?: 0
             )
         }
         item { Spacer(modifier = Modifier.height(8.dp)) }
         item {
             FitnessGoalsSection(
                 profileViewModel = profileViewModel,
-                challengesCompleted = user.challengesCompleted,
-                distanceTraveled = user.distanceTraveled,
-                caloriesBurned = user.caloriesBurned
+                challengesCompleted = user?.challengesCompleted ?: 0,
+                distanceTraveled = user?.distanceTraveled ?: 0.0,
+                caloriesBurned = user?.caloriesBurned ?: 0
             )
         }
         item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -257,7 +259,7 @@ fun GoalProgressBar(icon: ImageVector, current: Int, goal: Int, label: String) {
 }
 
 @Composable
-fun ChallengeItem(challenge: ProfileViewModel.Challenge) {
+fun ChallengeItem(challenge: ProfileViewModel.ChallengeInfo) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)

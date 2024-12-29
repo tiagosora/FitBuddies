@@ -1,42 +1,81 @@
 package com.example.fitbuddies.data.repositories
 
 import com.example.fitbuddies.data.models.User
-import com.example.fitbuddies.data.remote.SupabaseService
-import kotlinx.coroutines.flow.Flow
-import android.util.Log
-import com.example.fitbuddies.data.local.UserDao
+import com.example.fitbuddies.data.remote.Supabase.client
+import io.github.jan.supabase.postgrest.from
+import kotlinx.serialization.json.Json
 
-class UserRepository(
-    private val userDao: UserDao,
-    private val supabaseService: SupabaseService
-) {
+class UserRepository() {
+    suspend fun getUserById(userId: String): User? {
+        val response = client.from("users").select {
+            filter {
+                eq("userid", userId)
+            }
+        }
 
-    val allUsers: Flow<List<User>> = userDao.getAllUsers()
-
-    suspend fun insertUser(user: User) {
-        userDao.insertUser(user) // Save locally first
         try {
-            supabaseService.insertUser(user) // Sync to Supabase
+            val decodedResponse: List<User> = Json.decodeFromString(response.data)
+            val user : User? = decodedResponse.firstOrNull()
+//            println("Decoded User: ${decodedResponse.firstOrNull()}")
+            return user
         } catch (e: Exception) {
-            Log.e("UserRepository", "Failed to sync user: ${user.userId}", e)
+            println("Deserialization Error: ${e.message}")
+            return null
         }
     }
 
-    suspend fun refreshUsers() {
+    suspend fun getUsersByIds(userIds: List<String>): List<User> {
+        val response = client.from("users").select {
+            filter {
+                isIn("userid", userIds)
+            }
+        }
+
         try {
-            val remoteUsers = supabaseService.getAllUsers()
-            remoteUsers.forEach { userDao.insertUser(it) } // Update local cache
+            val decodedResponse: List<User> = Json.decodeFromString(response.data)
+//            println("Decoded Users: ${decodedResponse}")
+            return decodedResponse
         } catch (e: Exception) {
-            Log.e("UserRepository", "Failed to refresh users", e)
+            println("Deserialization Error: ${e.message}")
+            return emptyList()
         }
     }
 
-    suspend fun deleteUser(user: User) {
-        userDao.deleteUser(user) // Remove locally
+    suspend fun authenticateUser(email: String, password: String): User? {
+        val response = client.from("users").select {
+            filter {
+                and {
+                    eq("email", email)
+                    eq("password", password)
+                }
+            }
+        }
+
         try {
-            supabaseService.deleteUser(user.userId) // Delete remotely
+            val decodedResponse: List<User> = Json.decodeFromString(response.data)
+            val user : User? = decodedResponse.firstOrNull()
+//            println("Decoded User: ${decodedResponse.firstOrNull()}")
+            return user
         } catch (e: Exception) {
-            Log.e("UserRepository", "Failed to delete user: ${user.userId}", e)
+            println("Deserialization Error: ${e.message}")
+            return null
         }
     }
+
+    suspend fun insertUser(user: User): User? {
+        val response = client.from("users").insert(user) {
+            select()
+        }
+
+        try {
+            val decodedResponse: List<User> = Json.decodeFromString(response.data.toString())
+            val user : User? = decodedResponse.firstOrNull()
+//            println("Decoded User: ${decodedResponse.firstOrNull()}")
+            return user
+        } catch (e: Exception) {
+            println("Deserialization Error: ${e.message}")
+            return null
+        }
+    }
+
 }

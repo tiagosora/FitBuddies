@@ -19,18 +19,20 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.ChallengesViewModel
 import org.burnoutcrew.reorderable.*
 
 @Composable
-fun ChallengesScreen(viewModel: ChallengesViewModel) {
+fun ChallengesScreen(
+    viewModel: ChallengesViewModel = hiltViewModel()
+) {
     val pendingChallenges by viewModel.pendingChallenges.collectAsState()
     val acceptedChallenges by viewModel.acceptedChallenges.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         Text(
             "Challenges",
@@ -97,7 +99,7 @@ fun ChallengesScreen(viewModel: ChallengesViewModel) {
 
 @Composable
 fun PendingChallengeItem(
-    challenge: ChallengesViewModel.Challenge,
+    challenge: ChallengesViewModel.ChallengeInfo,
     onAccept: () -> Unit,
     onDeny: () -> Unit
 ) {
@@ -173,7 +175,7 @@ fun PendingChallengeItem(
 
 @Composable
 fun AcceptedChallengeItem(
-    challenge: ChallengesViewModel.Challenge,
+    challenge: ChallengesViewModel.ChallengeInfo,
     modifier: Modifier = Modifier,
     elevation: Dp = 0.dp
 ) {

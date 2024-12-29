@@ -28,7 +28,7 @@ data class OnboardingPage(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun OnboardingScreen(
-    onFinishOnboarding: () -> Unit
+    onFinishOnboarding: (String) -> Unit
 ) {
     val pages = listOf(
         OnboardingPage(
@@ -120,7 +120,7 @@ fun OnboardingScreen(
 private fun OnboardingPage(
     page: OnboardingPage,
     isLastPage: Boolean,
-    onFinish: () -> Unit
+    onFinish: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -159,7 +159,7 @@ private fun OnboardingPage(
 
         AnimatedVisibility(visible = isLastPage) {
             Button(
-                onClick = onFinish,
+                onClick = { onFinish("signUp") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -183,7 +183,7 @@ private fun OnboardingPage(
 
         AnimatedVisibility(visible = isLastPage) {
             Button(
-                onClick = onFinish,
+                onClick = { onFinish("signIn") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

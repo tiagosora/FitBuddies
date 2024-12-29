@@ -3,23 +3,23 @@ package com.example.fitbuddies.data.models
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.util.UUID
 
+@Serializable
 @Entity(
     tableName = "challenges",
     foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["userId"], childColumns = ["daredById"]),
+        ForeignKey(entity = User::class, parentColumns = ["userId"], childColumns = ["daredById"])
     ]
 )
 data class Challenge(
-    @PrimaryKey val challengeId: String = UUID.randomUUID().toString(),
-    val title: String,
-    val description: String,
-    val type: String,
-    val daredById: String,
-    val creationDate: Long = System.currentTimeMillis(),
-    val deadlineDate: Long? = null,
-    val completionDate: Long? = null,
-    val completionRate: Int = 0,
-    val isCompleted: Boolean = false
+    @PrimaryKey @SerialName("challengeid") val challengeId: String = UUID.randomUUID().toString(),
+    @SerialName("title") val title: String,
+    @SerialName("description") val description: String,
+    @SerialName("type") val type: String,
+    @SerialName("daredbyid") val daredById: String,
+    @SerialName("creationdate") val creationDate: String = System.currentTimeMillis().toString(),
+    @SerialName("deadlinedate") val deadlineDate: String? = null
 )

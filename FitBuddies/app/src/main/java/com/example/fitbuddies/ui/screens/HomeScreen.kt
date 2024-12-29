@@ -19,19 +19,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.fitbuddies.viewmodels.ActiveChallenge
-import com.example.fitbuddies.viewmodels.FitBuddyChallenge
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.HomeViewModel
+import com.example.fitbuddies.viewmodels.HomeViewModel.ActiveChallenge
+import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
 
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel) {
+fun HomeScreen(
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
     val activeChallenges by homeViewModel.activeChallenges.collectAsState()
     val fitBuddiesChallenges by homeViewModel.fitBuddiesChallenges.collectAsState()
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
         item {
             DailyActivitySummary(homeViewModel)
@@ -167,7 +169,7 @@ fun ActiveChallengeCard(challenge: ActiveChallenge) {
 fun FitBuddyChallengeItem(fitBuddyChallenge: FitBuddyChallenge) {
     ListItem(
         headlineContent = { Text(fitBuddyChallenge.fitBuddyName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold) },
-        supportingContent = { Text(fitBuddyChallenge.lastChallengeDescription, style = MaterialTheme.typography.bodySmall) },
+        supportingContent = { Text(fitBuddyChallenge.lastChallengeTitle, style = MaterialTheme.typography.bodySmall) },
         leadingContent = {
             Surface(
                 modifier = Modifier

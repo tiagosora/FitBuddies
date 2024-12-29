@@ -1,42 +1,111 @@
 package com.example.fitbuddies.data.repositories
 
 import com.example.fitbuddies.data.models.Friendship
-import com.example.fitbuddies.data.local.FriendshipDao
-import com.example.fitbuddies.data.remote.SupabaseService
-import kotlinx.coroutines.flow.Flow
-import android.util.Log
+import com.example.fitbuddies.data.remote.Supabase.client
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.postgrest.rpc
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
-class FriendshipRepository(
-    private val friendshipDao: FriendshipDao,
-    private val supabaseService: SupabaseService
-) {
 
-    fun getFriends(userId: String): Flow<List<Friendship>> = friendshipDao.getFriends(userId)
+class FriendshipRepository() {
 
-    suspend fun insertFriendship(friendship: Friendship) {
-        friendshipDao.insertFriendship(friendship) // Save locally first
+    suspend fun getUserFriendshipRequests(userId: String): List<RequestedFriendshipResponse> {
+        val columns = Columns.raw("""
+            users:userid (
+                userid,
+                firstname,
+                lastname,
+                profilepictureurl
+            ),
+            creationdate
+        """.trimIndent())
+        val response = client.from("friendships").select(
+            columns = columns
+        ) {
+            filter {
+                and {
+                    eq("friendid", userId)
+                    eq("isaccepted", false)
+                }
+            }
+            order(column = "creationdate", order = Order.ASCENDING)
+        }
+
         try {
-            supabaseService.insertFriendship(friendship) // Sync to Supabase
+            val decodedResponse: List<RequestedFriendshipResponse> = Json.decodeFromString(response.data)
+//            println("Decoded Friendship Requests: $decodedResponse")
+            return decodedResponse
         } catch (e: Exception) {
-            Log.e("FriendshipRepository", "Failed to sync friendship", e)
+            println("Deserialization Error: ${e.message}")
+            return emptyList()
         }
     }
 
-    suspend fun refreshFriendships() {
+    suspend fun getUserAcceptedFriendships(userId: String): List<Friendship> {
+        val response = client.from("friendships").select {
+            filter {
+                and {
+                    or {
+                        eq("userid", userId)
+                        eq("friendid", userId)
+                    }
+                    eq("isaccepted", true)
+                }
+            }
+        }
+
         try {
-            val remoteFriendships = supabaseService.getAllFriendships()
-            remoteFriendships.forEach { friendshipDao.insertFriendship(it) } // Update local cache
+            val decodedResponse: List<Friendship> = Json.decodeFromString(response.data)
+//            println("Decoded User Friendships: $decodedResponse")
+            return decodedResponse
         } catch (e: Exception) {
-            Log.e("FriendshipRepository", "Failed to refresh friendships", e)
+            println("Deserialization Error: ${e.message}")
+            return emptyList()
         }
     }
 
-    suspend fun deleteFriendship(friendship: Friendship) {
-        friendshipDao.deleteFriendship(friendship) // Remove locally
+    suspend fun getFitBuddiesDetailsWitCountChallenges(userId: String): List<FitBuddyCountChallenges> {
         try {
-            supabaseService.deleteFriendship(friendship) // Delete remotely
+            val response = client.postgrest.rpc(
+                // Used a stored Procedure
+                function = "get_fitbuddies_with_completed_challenges",
+                parameters = mapOf("user_id" to userId)
+            )
+
+//            println("Requested Response: ${response.data}")
+            val decodedResponse: List<FitBuddyCountChallenges> = Json.decodeFromString(response.data)
+//            println("Decoded Requested Response: $decodedResponse")
+            return decodedResponse
         } catch (e: Exception) {
-            Log.e("FriendshipRepository", "Failed to delete friendship", e)
+            println("Deserialization Error: ${e.message}")
+            return emptyList()
         }
     }
+
+    @Serializable
+    data class FitBuddyCountChallenges(
+        val fitbuddyid: String,
+        val firstname: String,
+        val lastname: String,
+        val profilepictureurl: String,
+        val challengescompletedcount: Int
+    )
+
+    @Serializable
+    data class UserDetails(
+        val userid: String,
+        val firstname: String,
+        val lastname: String,
+        val profilepictureurl: String
+    )
+
+    @Serializable
+    data class RequestedFriendshipResponse(
+        val users: UserDetails,
+        val creationdate: String
+    )
 }
