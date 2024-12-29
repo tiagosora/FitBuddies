@@ -9,9 +9,9 @@ TRUNCATE TABLE users RESTART IDENTITY CASCADE;
 INSERT INTO users (userId, email, password, firstName, lastName, challengesCompleted, distanceTraveled, caloriesBurned, profilePictureUrl)
 VALUES
 -- Main users
-(gen_random_uuid(), 'user1@example.com', 'password1', 'John', 'Doe', 10, 50.5, 1500, 'https://example.com/profiles/user1.jpg'),
-(gen_random_uuid(), 'user2@example.com', 'password2', 'Jane', 'Smith', 12, 70.0, 1800, 'https://example.com/profiles/user2.jpg'),
-(gen_random_uuid(), 'user3@example.com', 'password3', 'Alice', 'Johnson', 8, 30.0, 1200, 'https://example.com/profiles/user3.jpg'),
+(gen_random_uuid(), 'user1', 'pass', 'Tiago', 'Sora', 10, 50.5, 1500, 'https://example.com/profiles/user1.jpg'),
+(gen_random_uuid(), 'user2', 'pass', 'Lili', 'Ana', 12, 70.0, 1800, 'https://example.com/profiles/user2.jpg'),
+(gen_random_uuid(), 'user3', 'pass', 'Lia', 'Vibes', 8, 30.0, 1200, 'https://example.com/profiles/user3.jpg'),
 -- Other users
 (gen_random_uuid(), 'user4@example.com', 'password4', 'User', 'Four', 0, 0.0, 0, 'https://example.com/profiles/null_user.jpg'),
 (gen_random_uuid(), 'user5@example.com', 'password5', 'User', 'Five', 0, 0.0, 0, 'https://example.com/profiles/null_user.jpg'),
@@ -35,9 +35,9 @@ VALUES
 -- Main users are friends with each other
 INSERT INTO friendships (userId, friendId, isAccepted, creationDate)
 VALUES
-((SELECT userId FROM users WHERE email = 'user1@example.com'), (SELECT userId FROM users WHERE email = 'user2@example.com'), TRUE, now()),
-((SELECT userId FROM users WHERE email = 'user2@example.com'), (SELECT userId FROM users WHERE email = 'user3@example.com'), TRUE, now()),
-((SELECT userId FROM users WHERE email = 'user3@example.com'), (SELECT userId FROM users WHERE email = 'user1@example.com'), TRUE, now());
+((SELECT userId FROM users WHERE email = 'user1'), (SELECT userId FROM users WHERE email = 'user2'), TRUE, now()),
+((SELECT userId FROM users WHERE email = 'user2'), (SELECT userId FROM users WHERE email = 'user3'), TRUE, now()),
+((SELECT userId FROM users WHERE email = 'user3'), (SELECT userId FROM users WHERE email = 'user1'), TRUE, now());
 
 -- Friendships between main users and other users
 DO $$
@@ -47,8 +47,8 @@ DECLARE
     mainUser UUID;
     otherUser UUID;
 BEGIN
-    SELECT array_agg(userId) INTO mainUsers FROM users WHERE email IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
-    SELECT array_agg(userId) INTO otherUsers FROM users WHERE email NOT IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
+    SELECT array_agg(userId) INTO mainUsers FROM users WHERE email IN ('user1', 'user2', 'user3');
+    SELECT array_agg(userId) INTO otherUsers FROM users WHERE email NOT IN ('user1', 'user2', 'user3');
 
     FOREACH mainUser IN ARRAY mainUsers LOOP
         FOREACH otherUser IN ARRAY otherUsers LOOP
@@ -64,7 +64,7 @@ DECLARE
     mainUsers UUID[];
     types TEXT[] := ARRAY['Cycling', 'Exercise', 'Running', 'Swimming', 'Walking'];
 BEGIN
-    SELECT array_agg(userId) INTO mainUsers FROM users WHERE email IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
+    SELECT array_agg(userId) INTO mainUsers FROM users WHERE email IN ('user1', 'user2', 'user3');
 
     FOR i IN 1..50 LOOP
         INSERT INTO challenges (challengeId, title, description, type, daredById, creationDate, deadlineDate)
@@ -110,6 +110,9 @@ END $$;
 
 -- Update all dares with isAccepted = false to ensure isCompleted = false
 UPDATE dares SET isCompleted = FALSE WHERE isAccepted = FALSE;
+UPDATE dares SET isAccepted = TRUE WHERE isCompleted = TRUE;
+UPDATE dares SET completionRate = 100 WHERE isCompleted = TRUE;
+UPDATE dares SET completionRate = 0 WHERE isAccepted = FALSE;
 
 -- Insert Challenge Media
 DO $$
