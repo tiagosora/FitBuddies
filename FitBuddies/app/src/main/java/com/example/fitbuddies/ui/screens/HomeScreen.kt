@@ -1,6 +1,7 @@
 package com.example.fitbuddies.ui.screens
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,12 +21,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.fitbuddies.viewmodels.HomeViewModel
 import com.example.fitbuddies.viewmodels.HomeViewModel.ActiveChallenge
 import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
 
 @Composable
 fun HomeScreen(
+    navController: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val activeChallenges by homeViewModel.activeChallenges.collectAsState()
@@ -36,7 +39,7 @@ fun HomeScreen(
             .fillMaxSize()
     ) {
         item {
-            DailyActivitySummary(homeViewModel)
+            DailyActivitySummary(homeViewModel, navController)
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -56,7 +59,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(activeChallenges) { activeChallenge ->
-                    ActiveChallengeCard(activeChallenge)
+                    ActiveChallengeCard(activeChallenge, navController)
                 }
             }
         }
@@ -81,11 +84,15 @@ fun HomeScreen(
 }
 
 @Composable
-fun DailyActivitySummary(homeViewModel: HomeViewModel) {
+fun DailyActivitySummary(
+    homeViewModel: HomeViewModel,
+    navController: NavHostController
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp),
+            .height(100.dp)
+            .clickable { navController.navigate("challenge_details/daily_activity") },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
@@ -120,11 +127,18 @@ fun DailyActivitySummary(homeViewModel: HomeViewModel) {
 }
 
 @Composable
-fun ActiveChallengeCard(challenge: ActiveChallenge) {
+fun ActiveChallengeCard(
+    challenge: ActiveChallenge,
+    navController: NavHostController
+) {
     Card(
         modifier = Modifier
             .width(200.dp)
-            .height(180.dp),
+            .height(180.dp)
+            .clickable {
+                val id = challenge.challengeId ?: "static_id"
+                navController.navigate("challenge_details/$id")
+            },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
@@ -156,7 +170,7 @@ fun ActiveChallengeCard(challenge: ActiveChallenge) {
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
             LinearProgressIndicator(
-                progress = { challenge.completionRate },
+                progress = challenge.completionRate,
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.primaryContainer
@@ -194,4 +208,3 @@ fun FitBuddyChallengeItem(fitBuddyChallenge: FitBuddyChallenge) {
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
     )
 }
-

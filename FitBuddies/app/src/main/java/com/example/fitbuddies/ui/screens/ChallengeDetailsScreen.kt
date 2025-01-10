@@ -1,53 +1,59 @@
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+package com.example.fitbuddies.ui.screens
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.fitbuddies.R
-import androidx.compose.ui.text.font.FontWeight
+import ChallengeDetailsViewModel
+import ChallengeDetails
+import Participant
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun ChallengeDetailsScreen(viewModel: ChallengeDetailsViewModel, challengeId: String) {
+fun ChallengeDetailsScreen(
+    viewModel: ChallengeDetailsViewModel = hiltViewModel(),
+    challengeId: String
+) {
     val challengeDetails by viewModel.challengeDetails.collectAsStateWithLifecycle()
 
     LaunchedEffect(challengeId) {
-        viewModel.loadChallengeDetails(challengeId)
+        if (challengeId.isNotEmpty()) {
+            viewModel.loadChallengeDetails(challengeId)
+        }
     }
 
-    challengeDetails?.let { details ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            item {
-                QRCodeSection(onQRCodeClick = viewModel::onQRCodeClick)
-            }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 60.dp, start = 16.dp, end = 16.dp)
+    ) {
+        item {
+            QRCodeSection(onQRCodeClick = { /* Simulated QR Code click */ })
+        }
 
+        if (challengeDetails != null) {
             item {
-                ChallengeInfoCard(details)
+                ChallengeInfoCard(challengeDetails!!)
             }
-
             item {
-                ChallengeDetailsSection(details)
+                ChallengeDetailsAlignedSection(challengeDetails!!)
             }
-
             item {
                 Text(
                     "Participants",
@@ -56,21 +62,70 @@ fun ChallengeDetailsScreen(viewModel: ChallengeDetailsViewModel, challengeId: St
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
             }
-
-            items(details.participants) { participant ->
+            items(challengeDetails!!.participants) { participant ->
                 ParticipantItem(participant)
+            }
+        } else {
+            item {
+                Text(
+                    text = "Static Challenge Details",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     }
 }
 
 @Composable
+fun ChallengeDetailsAlignedSection(details: ChallengeDetails) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            DetailCard("Duration", details.duration)
+            Spacer(modifier = Modifier.height(20.dp))
+            DetailCard("Difficulty", details.difficulty)
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Card(
+            modifier = Modifier
+                .weight(1f)
+                .height(IntrinsicSize.Max),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = details.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 7,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
 fun QRCodeSection(onQRCodeClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onQRCodeClick)
-            .padding(bottom = 16.dp),
+            .padding(bottom = 16.dp)
+            .clickable(onClick = onQRCodeClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Row(
@@ -126,7 +181,9 @@ fun ChallengeDetailsSection(details: ChallengeDetails) {
             .fillMaxWidth()
             .padding(bottom = 16.dp)
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
             DetailCard("Duration", details.duration)
             Spacer(modifier = Modifier.height(8.dp))
             DetailCard("Difficulty", details.difficulty)
@@ -135,13 +192,22 @@ fun ChallengeDetailsSection(details: ChallengeDetails) {
         Card(
             modifier = Modifier
                 .weight(1f)
-                .height(IntrinsicSize.Max)
+                .height(IntrinsicSize.Max),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         ) {
-            Text(
-                details.description,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(16.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = details.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 6,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }
@@ -184,8 +250,7 @@ fun ParticipantItem(participant: Participant) {
                 contentDescription = participant.name,
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondary),
+                    .background(MaterialTheme.colorScheme.secondary, shape = CircleShape),
                 tint = Color.White
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -196,4 +261,3 @@ fun ParticipantItem(participant: Participant) {
         }
     }
 }
-
