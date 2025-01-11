@@ -26,7 +26,7 @@ import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
 
 @Composable
 fun HomeScreen(
-    homeViewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     val activeChallenges by homeViewModel.activeChallenges.collectAsState()
     val fitBuddiesChallenges by homeViewModel.fitBuddiesChallenges.collectAsState()

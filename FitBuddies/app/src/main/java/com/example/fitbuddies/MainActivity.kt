@@ -177,6 +177,7 @@ fun MainScreen(
                 NavigationItem.Challenges.route -> ChallengesScreen()
                 NavigationItem.Profile.route -> ProfileScreen()
                 NavigationItem.Add.route -> AddChallengeScreen()
+                NavigationItem.Map.route -> RouteScreen ( onPermissionDenied= {} )
                 else -> HomeScreen()
             }
         }
