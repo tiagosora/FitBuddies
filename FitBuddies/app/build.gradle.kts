@@ -65,7 +65,7 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:realtime-kt")
-
+    implementation("androidx.compose.foundation:foundation")
     implementation("org.slf4j:slf4j-simple:2.0.7")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")

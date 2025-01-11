@@ -1,17 +1,21 @@
 package com.example.fitbuddies.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsBike
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.SportsHandball
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,20 +29,70 @@ import androidx.navigation.NavHostController
 import com.example.fitbuddies.viewmodels.HomeViewModel
 import com.example.fitbuddies.viewmodels.HomeViewModel.ActiveChallenge
 import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
+    val tabTitles = listOf("Your Activity", "Feed")
+
+    // Aqui, passamos o total de abas (pageCount) diretamente no rememberPagerState
+    val pagerState = rememberPagerState(
+        pageCount = { tabTitles.size },
+        initialPage = 0
+    )
+
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = pagerState.currentPage) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = (pagerState.currentPage == index),
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = { Text(title) }
+                )
+            }
+        }
+
+        // Pager que permite swipe entre "Your Activity" e "Feed"
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f)
+        ) { page ->
+            when (page) {
+                0 -> {
+                    YourActivityTab(navController, homeViewModel)
+                }
+                1 -> {
+                    FeedTab()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun YourActivityTab(
+    navController: NavHostController,
+    homeViewModel: HomeViewModel
+) {
     val activeChallenges by homeViewModel.activeChallenges.collectAsState()
     val fitBuddiesChallenges by homeViewModel.fitBuddiesChallenges.collectAsState()
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
+        // Adicionamos um espaço antes de exibir a DailyActivitySummary
         item {
+            Spacer(modifier = Modifier.height(24.dp))  // <<--- Espaço extra
             DailyActivitySummary(homeViewModel, navController)
         }
         item {
@@ -79,6 +133,27 @@ fun HomeScreen(
         items(fitBuddiesChallenges) { fitBuddyChallenge ->
             FitBuddyChallengeItem(fitBuddyChallenge)
             Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+fun FeedTab() {
+    val fakePosts = remember {
+        (1..10).map { i -> "Post #$i: Este é um post de exemplo do usuário $i" }
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(fakePosts) { post ->
+            Text(
+                text = post,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -182,8 +257,19 @@ fun ActiveChallengeCard(
 @Composable
 fun FitBuddyChallengeItem(fitBuddyChallenge: FitBuddyChallenge) {
     ListItem(
-        headlineContent = { Text(fitBuddyChallenge.fitBuddyName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold) },
-        supportingContent = { Text(fitBuddyChallenge.lastChallengeTitle, style = MaterialTheme.typography.bodySmall) },
+        headlineContent = {
+            Text(
+                fitBuddyChallenge.fitBuddyName,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        supportingContent = {
+            Text(
+                fitBuddyChallenge.lastChallengeTitle,
+                style = MaterialTheme.typography.bodySmall
+            )
+        },
         leadingContent = {
             Surface(
                 modifier = Modifier
