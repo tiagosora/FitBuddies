@@ -7,7 +7,6 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
-
 android {
     namespace = "com.example.fitbuddies"
     compileSdk = 35
@@ -73,10 +72,18 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation ("androidx.camera:camera-camera2:1.3.0-alpha07")
+    implementation ("androidx.camera:camera-lifecycle:1.3.0-alpha07")
+    implementation ("androidx.camera:camera-view:1.3.0-alpha07")
+
+    // ZXing para leitura de QR (se preferir MLKit, use as libs correspondentes)
+    implementation ("com.google.zxing:core:3.5.0")
+
+    // Para lidar com permissões em Jetpack Compose (Accompanist)
+    implementation ("com.google.accompanist:accompanist-permissions:0.28.0")
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -84,7 +91,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 }
 
 kapt {
