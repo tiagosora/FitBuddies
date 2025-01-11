@@ -13,6 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.fitbuddies.data.models.User
 import com.example.fitbuddies.ui.components.BottomNavigationBar
 import com.example.fitbuddies.ui.components.NavigationItem
@@ -40,10 +46,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             FitBuddiesTheme {
+                val navController = rememberNavController()
                 var currentScreen by remember { mutableStateOf(if (isOnboardingCompleted) "sign in" else "onboarding") }
-
-//                var isAuthenticated by remember { mutableStateOf(false) }
                 var isAuthenticated by remember { mutableStateOf(true) }
+
                 sharedPreferences.edit().putString("currentUserId", "2eef40fc-3223-4bb2-8003-6af0e45dfc53").apply()
 
                 val authenticationViewModel = viewModel<AuthenticationViewModel>()
@@ -58,8 +64,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-                    println("isAuthenticated: $isAuthenticated")
-                    println("currentScreen: $currentScreen")
                 }
 
                 fun onSignUp(firstName: String, lastName: String, email: String, password: String) = runBlocking {
@@ -72,8 +76,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-                    println("isAuthenticated: $isAuthenticated")
-                    println("currentScreen: $currentScreen")
                 }
 
                 fun completeOnboarding() {
@@ -81,42 +83,46 @@ class MainActivity : ComponentActivity() {
                     currentScreen = "sign in"
                 }
 
-                when {
-                    !isAuthenticated -> {
-                        when (currentScreen) {
-                            "onboarding" -> {
-                                OnboardingScreen { completeOnboarding() }
-                            }
-                            "sign in" -> {
-                                SignInScreen(
-                                    onSignIn = { email, password -> onSignIn(email, password) },
-                                    onNavigateToSignUp = { currentScreen = "sign up" }
-                                )
-                            }
-                            "sign up" -> {
-                                SignUpScreen(
-                                    onSignUp = { firstName, lastName, email, password -> onSignUp(firstName, lastName, email, password) },
-                                    onNavigateToSignIn = { currentScreen = "sign in" }
-                                )
-                            }
-                            else -> {
-                                currentScreen = "onboarding"
-                            }
-                        }
+                if (!isAuthenticated) {
+                    when (currentScreen) {
+                        "onboarding" -> OnboardingScreen { completeOnboarding() }
+                        "sign in" -> SignInScreen(
+                            onSignIn = { email, password -> onSignIn(email, password) },
+                            onNavigateToSignUp = { currentScreen = "sign up" }
+                        )
+                        "sign up" -> SignUpScreen(
+                            onSignUp = { firstName, lastName, email, password -> onSignUp(firstName, lastName, email, password) },
+                            onNavigateToSignIn = { currentScreen = "sign in" }
+                        )
+                        else -> currentScreen = "onboarding"
                     }
-                    else -> {
-                        MainScreen()
-                    }
+                } else {
+                    MainApp(navController)
                 }
             }
         }
     }
 }
 
-@SuppressLint("StateFlowValueCalledInComposition")
+@Composable
+fun MainApp(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = "main") {
+        composable("main") { MainScreen(navController) }
+        composable(
+            route = "challenge_details/{challengeId}",
+            arguments = listOf(navArgument("challengeId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val challengeId = backStackEntry.arguments?.getString("challengeId") ?: ""
+            ChallengeDetailsScreen(challengeId = challengeId)
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun MainScreen(
+    navController: NavHostController,
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     var currentRoute by remember { mutableStateOf(NavigationItem.Home.route) }
@@ -134,19 +140,16 @@ fun MainScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "${user?.firstName} ${user?.lastName}",
+                            text = "${user?.firstName ?: "Guest"} ${user?.lastName ?: ""}",
                             style = MaterialTheme.typography.titleLarge
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Implement settings */ }) {
-                        Icon(Icons.Default.QrCodeScanner, contentDescription = "QR Code Scanner")
-                    }
-                    IconButton(onClick = { /* TODO: Implement notifications */ }) {
+                    IconButton(onClick = { /* TODO: Add functionality */ }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notifications")
                     }
-                    IconButton(onClick = { /* TODO: Implement settings */ }) {
+                    IconButton(onClick = { /* TODO: Add functionality */ }) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
@@ -159,26 +162,27 @@ fun MainScreen(
                     currentRoute = navigationItem.route
                 }
             )
-        },
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    start = 32.dp,
-                    end = 32.dp,
-                    top = innerPadding.calculateTopPadding() + 16.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = innerPadding.calculateTopPadding(),
                     bottom = innerPadding.calculateBottomPadding()
                 )
         ) {
             when (currentRoute) {
-                NavigationItem.Home.route -> HomeScreen()
+                NavigationItem.Home.route -> HomeScreen(navController)
                 NavigationItem.Friends.route -> FitBuddiesScreen()
                 NavigationItem.Challenges.route -> ChallengesScreen()
                 NavigationItem.Profile.route -> ProfileScreen()
                 NavigationItem.Add.route -> AddChallengeScreen()
                 NavigationItem.Map.route -> RouteScreen ( onPermissionDenied= {} )
-                else -> HomeScreen()
+                else -> HomeScreen(navController)
+
             }
         }
     }

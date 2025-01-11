@@ -32,7 +32,7 @@ class ChallengeDetailsViewModel : ViewModel() {
                 id = challengeId,
                 name = "30-Day Running Challenge",
                 imageUrl = "https://example.com/running-challenge.jpg",
-                description = "Run every day for 30 days to improve your endurance and overall fitness.",
+                description = "Run every day for 30 days to improve your endurance and overall fitness. You can do this bestie, I believe in you you know that hahhahahah slay queen aaaaa",
                 duration = "30 days",
                 difficulty = "Intermediate",
                 participants = listOf(
