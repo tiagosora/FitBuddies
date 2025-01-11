@@ -3,7 +3,16 @@ package com.example.fitbuddies.ui.screens
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -39,15 +48,17 @@ fun HomeScreen(
 ) {
     val tabTitles = listOf("Your Activity", "Feed")
 
-    // Aqui, passamos o total de abas (pageCount) diretamente no rememberPagerState
+    // Controla a quantidade de páginas (abas) e a página inicial
     val pagerState = rememberPagerState(
-        pageCount = { tabTitles.size },
+        pageCount = { tabTitles.size }, // ou pageCount = tabTitles.size
         initialPage = 0
     )
 
     val scope = rememberCoroutineScope()
 
+    // Layout principal contendo o TabRow + HorizontalPager
     Column(modifier = Modifier.fillMaxSize()) {
+        // Barra de abas no topo
         TabRow(selectedTabIndex = pagerState.currentPage) {
             tabTitles.forEachIndexed { index, title ->
                 Tab(
@@ -62,16 +73,19 @@ fun HomeScreen(
             }
         }
 
-        // Pager que permite swipe entre "Your Activity" e "Feed"
+        // Pager (deslizar entre “Your Activity” e “Feed”)
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.weight(1f)
         ) { page ->
             when (page) {
                 0 -> {
+                    // Aba 1 → Conteúdo da “Your Activity”
                     YourActivityTab(navController, homeViewModel)
                 }
                 1 -> {
+                    // Aba 2 → Conteúdo do “Feed”
+                    // (Definido em outro arquivo, ex: FeedTab.kt)
                     FeedTab()
                 }
             }
@@ -133,27 +147,6 @@ fun YourActivityTab(
         items(fitBuddiesChallenges) { fitBuddyChallenge ->
             FitBuddyChallengeItem(fitBuddyChallenge)
             Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
-}
-
-@Composable
-fun FeedTab() {
-    val fakePosts = remember {
-        (1..10).map { i -> "Post #$i: Este é um post de exemplo do usuário $i" }
-    }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(fakePosts) { post ->
-            Text(
-                text = post,
-                style = MaterialTheme.typography.bodyMedium
-            )
         }
     }
 }
