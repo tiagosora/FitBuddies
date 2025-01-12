@@ -11,7 +11,7 @@ class AddChallengeViewModel : ViewModel() {
     private val _creationStatus = MutableStateFlow<CreationStatus>(CreationStatus.Idle)
     val creationStatus: StateFlow<CreationStatus> = _creationStatus.asStateFlow()
 
-    fun createChallenge(title: String, description: String, type: String, duration: Int) {
+    fun createChallenge(title: String, description: String, type: String, duration: Int, goal: Int) {
         viewModelScope.launch {
             _creationStatus.value = CreationStatus.Loading
             try {
