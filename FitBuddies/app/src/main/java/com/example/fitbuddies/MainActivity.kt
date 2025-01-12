@@ -2,6 +2,7 @@ package com.example.fitbuddies
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -113,7 +114,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainApp(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "main") {
-
         composable("main") { MainScreen(navController) }
 
         composable(
@@ -125,8 +125,17 @@ fun MainApp(navController: NavHostController) {
         }
 
         composable("scan_qr_code") {
-            QRCodeScannerWithPermission { scannedChallengeId ->
-                navController.navigate("challenge_details/$scannedChallengeId")
+            QRCodeScannerWithPermission { scannedUri ->
+                try {
+                    // Extrai apenas o ID do final da URI
+                    val challengeId = scannedUri.substringAfterLast("/")
+                    navController.navigate("challenge_details/$challengeId") {
+                        // Opcional: configurações de navegação
+                        popUpTo("scan_qr_code") { inclusive = true }
+                    }
+                } catch (e: Exception) {
+                    Log.e("QRScanner", "Erro ao processar QR code: $scannedUri", e)
+                }
             }
         }
     }
