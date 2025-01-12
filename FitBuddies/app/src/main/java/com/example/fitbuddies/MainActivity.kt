@@ -113,7 +113,12 @@ fun MainApp(navController: NavHostController) {
             arguments = listOf(navArgument("challengeId") { type = NavType.StringType })
         ) { backStackEntry ->
             val challengeId = backStackEntry.arguments?.getString("challengeId") ?: ""
-            ChallengeDetailsScreen(challengeId = challengeId)
+            ChallengeDetailsScreen(challengeId = challengeId, navController = navController)
+        }
+        composable(
+            route = "route_map",
+        ) {
+            RouteScreen(onPermissionDenied = {/* TODO: IMPLEMENTAR AÇÂO */})
         }
     }
 }
@@ -180,7 +185,6 @@ fun MainScreen(
                 NavigationItem.Challenges.route -> ChallengesScreen()
                 NavigationItem.Profile.route -> ProfileScreen()
                 NavigationItem.Add.route -> AddChallengeScreen()
-                NavigationItem.Map.route -> RouteScreen ( onPermissionDenied= {} )
                 else -> HomeScreen(navController)
 
             }

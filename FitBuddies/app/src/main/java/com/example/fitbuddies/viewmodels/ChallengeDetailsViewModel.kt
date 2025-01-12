@@ -16,8 +16,10 @@ data class ChallengeDetails(
     val name: String,
     val imageUrl: String,
     val description: String,
+    val type: String,
     val duration: String,
-    val difficulty: String,
+    val goal: Int,
+    val goalCompletion : Int,
     val participants: List<Participant>
 )
 
@@ -34,7 +36,9 @@ class ChallengeDetailsViewModel : ViewModel() {
                 imageUrl = "https://example.com/running-challenge.jpg",
                 description = "Run every day for 30 days to improve your endurance and overall fitness. You can do this bestie, I believe in you you know that hahhahahah slay queen aaaaa",
                 duration = "30 days",
-                difficulty = "Intermediate",
+                type = "Running",
+                goal = 30,
+                goalCompletion = 20,
                 participants = listOf(
                     Participant("1", "John Doe", "https://example.com/john.jpg"),
                     Participant("2", "Jane Smith", "https://example.com/jane.jpg"),

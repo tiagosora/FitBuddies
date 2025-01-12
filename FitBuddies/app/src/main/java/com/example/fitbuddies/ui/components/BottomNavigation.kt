@@ -26,7 +26,6 @@ sealed class NavigationItem(
 
     data object Add : NavigationItem("add", Icons.Default.Add, "Add")
 
-    data object Map: NavigationItem("map", Icons.Default.Map, "Map")
 }
 
 @Composable
@@ -64,7 +63,6 @@ fun BottomNavigationBar(
                 NavigationItem.Friends,
                 NavigationItem.Challenges,
                 NavigationItem.Profile,
-                NavigationItem.Map
             )
 
             items.forEachIndexed { index, item ->
