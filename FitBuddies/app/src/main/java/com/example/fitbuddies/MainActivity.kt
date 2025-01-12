@@ -2,6 +2,7 @@ package com.example.fitbuddies
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -14,23 +15,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import androidx.navigation.NavType
+import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.example.fitbuddies.data.models.User
+import com.example.fitbuddies.qr.QRCodeScannerWithPermission
 import com.example.fitbuddies.ui.components.BottomNavigationBar
 import com.example.fitbuddies.ui.components.NavigationItem
 import com.example.fitbuddies.ui.screens.*
 import com.example.fitbuddies.ui.theme.FitBuddiesTheme
 import com.example.fitbuddies.viewmodels.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -47,10 +43,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             FitBuddiesTheme {
                 val navController = rememberNavController()
-                var currentScreen by remember { mutableStateOf(if (isOnboardingCompleted) "sign in" else "onboarding") }
+                var currentScreen by remember {
+                    mutableStateOf(
+                        if (isOnboardingCompleted) "sign in" else "onboarding"
+                    )
+                }
                 var isAuthenticated by remember { mutableStateOf(true) }
 
-                sharedPreferences.edit().putString("currentUserId", "2eef40fc-3223-4bb2-8003-6af0e45dfc53").apply()
+                // Exemplo fixo de currentUserId
+                sharedPreferences.edit()
+                    .putString("currentUserId", "2eef40fc-3223-4bb2-8003-6af0e45dfc53")
+                    .apply()
 
                 val authenticationViewModel = viewModel<AuthenticationViewModel>()
 
@@ -83,6 +86,7 @@ class MainActivity : ComponentActivity() {
                     currentScreen = "sign in"
                 }
 
+                // Fluxo de telas de autenticação
                 if (!isAuthenticated) {
                     when (currentScreen) {
                         "onboarding" -> OnboardingScreen { completeOnboarding() }
@@ -91,12 +95,15 @@ class MainActivity : ComponentActivity() {
                             onNavigateToSignUp = { currentScreen = "sign up" }
                         )
                         "sign up" -> SignUpScreen(
-                            onSignUp = { firstName, lastName, email, password -> onSignUp(firstName, lastName, email, password) },
+                            onSignUp = { firstName, lastName, email, password ->
+                                onSignUp(firstName, lastName, email, password)
+                            },
                             onNavigateToSignIn = { currentScreen = "sign in" }
                         )
                         else -> currentScreen = "onboarding"
                     }
                 } else {
+                    // Se já estiver autenticado, entra no app principal
                     MainApp(navController)
                 }
             }
@@ -108,12 +115,28 @@ class MainActivity : ComponentActivity() {
 fun MainApp(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "main") {
         composable("main") { MainScreen(navController) }
+
         composable(
             route = "challenge_details/{challengeId}",
             arguments = listOf(navArgument("challengeId") { type = NavType.StringType })
         ) { backStackEntry ->
             val challengeId = backStackEntry.arguments?.getString("challengeId") ?: ""
             ChallengeDetailsScreen(challengeId = challengeId)
+        }
+
+        composable("scan_qr_code") {
+            QRCodeScannerWithPermission { scannedUri ->
+                try {
+                    // Extrai apenas o ID do final da URI
+                    val challengeId = scannedUri.substringAfterLast("/")
+                    navController.navigate("challenge_details/$challengeId") {
+                        // Opcional: configurações de navegação
+                        popUpTo("scan_qr_code") { inclusive = true }
+                    }
+                } catch (e: Exception) {
+                    Log.e("QRScanner", "Erro ao processar QR code: $scannedUri", e)
+                }
+            }
         }
     }
 }
@@ -146,10 +169,15 @@ fun MainScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Add functionality */ }) {
+                    IconButton(onClick = {
+                        navController.navigate("scan_qr_code")
+                    }) {
+                        Icon(Icons.Default.QrCode, contentDescription = "Scan QR Code")
+                    }
+                    IconButton(onClick = { /* TODO */ }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notifications")
                     }
-                    IconButton(onClick = { /* TODO: Add functionality */ }) {
+                    IconButton(onClick = { /* TODO */ }) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
