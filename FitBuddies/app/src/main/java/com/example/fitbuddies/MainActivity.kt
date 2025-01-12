@@ -118,7 +118,9 @@ fun MainApp(navController: NavHostController) {
         composable(
             route = "route_map",
         ) {
-            RouteScreen(onPermissionDenied = {/* TODO: IMPLEMENTAR AÇÂO */})
+            RouteScreen(onPermissionDenied = {/* TODO: IMPLEMENTAR AÇÂO */},
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

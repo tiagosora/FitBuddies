@@ -15,13 +15,15 @@ import kotlinx.coroutines.launch
 import com.google.android.gms.location.Priority
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-
+import kotlin.math.roundToInt
 
 data class RouteUiState(
     val hasLocationPermission: Boolean = false,
     val isTracking: Boolean = false,
+    val isPaused: Boolean = false,
     val currentLocation: LatLng? = null,
-    val routePoints: List<LatLng> = emptyList()
+    val routePoints: List<LatLng> = emptyList(),
+    val totalDistanceMeters: Float = 0f // TODO: Mandar Para a API
 )
 
 @HiltViewModel
@@ -40,12 +42,9 @@ class RouteViewModel @Inject constructor(
         }
     }
 
-
     private val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
         .setMinUpdateIntervalMillis(5000)
         .build()
-
-
 
     fun onPermissionGranted() {
         _uiState.value = _uiState.value.copy(hasLocationPermission = true)
@@ -67,27 +66,54 @@ class RouteViewModel @Inject constructor(
     private fun updateLocation(location: Location) {
         val newLocation = LatLng(location.latitude, location.longitude)
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                currentLocation = newLocation,
-                routePoints = if (_uiState.value.isTracking) {
-                    _uiState.value.routePoints + newLocation
+            val currentState = _uiState.value
+            if (currentState.isTracking && !currentState.isPaused) {
+                val newDistance = if (currentState.routePoints.isNotEmpty()) {
+                    val lastPoint = currentState.routePoints.last()
+                    val results = FloatArray(1)
+                    Location.distanceBetween(
+                        lastPoint.latitude, lastPoint.longitude,
+                        newLocation.latitude, newLocation.longitude,
+                        results
+                    )
+                    currentState.totalDistanceMeters + results[0]
                 } else {
-                    _uiState.value.routePoints
+                    currentState.totalDistanceMeters
                 }
-            )
+
+                _uiState.value = currentState.copy(
+                    currentLocation = newLocation,
+                    routePoints = currentState.routePoints + newLocation,
+                    totalDistanceMeters = newDistance
+                )
+            } else {
+                _uiState.value = currentState.copy(currentLocation = newLocation)
+            }
         }
     }
 
     fun startRoute() {
         _uiState.value = _uiState.value.copy(
             isTracking = true,
-            routePoints = emptyList()
+            isPaused = false,
+            routePoints = emptyList(),
+            totalDistanceMeters = 0f
         )
     }
 
+    fun pauseRoute() {
+        _uiState.value = _uiState.value.copy(isPaused = true)
+    }
+
+    fun resumeRoute() {
+        _uiState.value = _uiState.value.copy(isPaused = false)
+    }
+
     fun endRoute() {
-        _uiState.value = _uiState.value.copy(isTracking = false)
-        // Aqui você pode implementar a lógica para salvar a rota
+        _uiState.value = _uiState.value.copy(
+            isTracking = false,
+            isPaused = false
+        )
     }
 
     override fun onCleared() {

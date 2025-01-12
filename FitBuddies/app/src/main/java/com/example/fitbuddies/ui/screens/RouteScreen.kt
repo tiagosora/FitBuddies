@@ -22,7 +22,8 @@ import com.google.maps.android.compose.*
 fun RouteScreen(
     modifier: Modifier = Modifier,
     viewModel: RouteViewModel = hiltViewModel(),
-    onPermissionDenied: () -> Unit
+    onPermissionDenied: () -> Unit,
+    onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -60,7 +61,6 @@ fun RouteScreen(
                 )
             }
         ) {
-            // Draw route polyline
             if (uiState.routePoints.isNotEmpty()) {
                 Polyline(
                     points = uiState.routePoints,
@@ -69,20 +69,65 @@ fun RouteScreen(
             }
         }
 
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
-        ) {
-            Button(
-                onClick = {
-                    if (!uiState.isTracking) viewModel.startRoute()
-                    else viewModel.endRoute()
-                },
-                modifier = Modifier.fillMaxWidth()
+        // Distance Display
+        if (uiState.isTracking) {
+            Card(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(16.dp)
             ) {
-                Text(if (!uiState.isTracking) "Start Route" else "End Route")
+                Text(
+                    text = formatDistance(uiState.totalDistanceMeters),
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.headlineMedium
+                )
             }
         }
+
+        // Control Buttons
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            if (!uiState.isTracking) {
+                Button(
+                    onClick = { viewModel.startRoute() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Start")
+                }
+            } else {
+                Button(
+                    onClick = {
+                        if (uiState.isPaused) viewModel.resumeRoute()
+                        else viewModel.pauseRoute()
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(if (uiState.isPaused) "Resume" else "Pause")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        viewModel.endRoute()
+                        onNavigateBack()
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Stop")
+                }
+            }
+        }
+    }
+}
+
+private fun formatDistance(meters: Float): String {
+    return if (meters >= 1000) {
+        String.format("%.2f km", meters / 1000)
+    } else {
+        String.format("%d m", meters.toInt())
     }
 }

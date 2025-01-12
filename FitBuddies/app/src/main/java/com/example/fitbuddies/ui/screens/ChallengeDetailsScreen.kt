@@ -179,7 +179,7 @@ fun QRCodeSection(onQRCodeClick: () -> Unit) {
 @Composable
 fun StartExerciseSection(onStartExercise: (Long) -> Unit) {
     val startTime = remember { mutableStateOf<Long?>(null) }
-    val elapsedTime = remember { mutableStateOf(0L) }
+    val elapsedTime = remember { mutableStateOf(0L) } // TODO: Mandar isto para a API
     val isRunning = remember { mutableStateOf(false) }
 
     // Atualiza a contagem em tempo real enquanto está em execução
@@ -305,7 +305,6 @@ fun StartMapSection(onStartExercise: (Long) -> Unit, navController: NavControlle
                 Text(
                     text = "Click Start to Begin Exercise ",
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
                 )
 
         }
