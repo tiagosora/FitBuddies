@@ -1,16 +1,30 @@
 package com.example.fitbuddies.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsBike
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.SportsHandball
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,23 +34,80 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.fitbuddies.viewmodels.HomeViewModel
 import com.example.fitbuddies.viewmodels.HomeViewModel.ActiveChallenge
 import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
+    navController: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel()
+) {
+    val tabTitles = listOf("Your Activity", "Feed")
+
+    // Controla a quantidade de páginas (abas) e a página inicial
+    val pagerState = rememberPagerState(
+        pageCount = { tabTitles.size }, // ou pageCount = tabTitles.size
+        initialPage = 0
+    )
+
+    val scope = rememberCoroutineScope()
+
+    // Layout principal contendo o TabRow + HorizontalPager
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Barra de abas no topo
+        TabRow(selectedTabIndex = pagerState.currentPage) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = (pagerState.currentPage == index),
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = { Text(title) }
+                )
+            }
+        }
+
+        // Pager (deslizar entre “Your Activity” e “Feed”)
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f)
+        ) { page ->
+            when (page) {
+                0 -> {
+                    // Aba 1 → Conteúdo da “Your Activity”
+                    YourActivityTab(navController, homeViewModel)
+                }
+                1 -> {
+                    // Aba 2 → Conteúdo do “Feed”
+                    // (Definido em outro arquivo, ex: FeedTab.kt)
+                    FeedTab()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun YourActivityTab(
+    navController: NavHostController,
+    homeViewModel: HomeViewModel
 ) {
     val activeChallenges by homeViewModel.activeChallenges.collectAsState()
     val fitBuddiesChallenges by homeViewModel.fitBuddiesChallenges.collectAsState()
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
+        // Adicionamos um espaço antes de exibir a DailyActivitySummary
         item {
-            DailyActivitySummary(homeViewModel)
+            Spacer(modifier = Modifier.height(24.dp))  // <<--- Espaço extra
+            DailyActivitySummary(homeViewModel, navController)
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -56,7 +127,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(activeChallenges) { activeChallenge ->
-                    ActiveChallengeCard(activeChallenge)
+                    ActiveChallengeCard(activeChallenge, navController)
                 }
             }
         }
@@ -81,11 +152,15 @@ fun HomeScreen(
 }
 
 @Composable
-fun DailyActivitySummary(homeViewModel: HomeViewModel) {
+fun DailyActivitySummary(
+    homeViewModel: HomeViewModel,
+    navController: NavHostController
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp),
+            .height(100.dp)
+            .clickable { navController.navigate("challenge_details/daily_activity") },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
@@ -120,11 +195,18 @@ fun DailyActivitySummary(homeViewModel: HomeViewModel) {
 }
 
 @Composable
-fun ActiveChallengeCard(challenge: ActiveChallenge) {
+fun ActiveChallengeCard(
+    challenge: ActiveChallenge,
+    navController: NavHostController
+) {
     Card(
         modifier = Modifier
             .width(200.dp)
-            .height(180.dp),
+            .height(180.dp)
+            .clickable {
+                val id = challenge.challengeId ?: "static_id"
+                navController.navigate("challenge_details/$id")
+            },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
@@ -156,7 +238,7 @@ fun ActiveChallengeCard(challenge: ActiveChallenge) {
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
             LinearProgressIndicator(
-                progress = { challenge.completionRate },
+                progress = challenge.completionRate,
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.primaryContainer
@@ -168,8 +250,19 @@ fun ActiveChallengeCard(challenge: ActiveChallenge) {
 @Composable
 fun FitBuddyChallengeItem(fitBuddyChallenge: FitBuddyChallenge) {
     ListItem(
-        headlineContent = { Text(fitBuddyChallenge.fitBuddyName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold) },
-        supportingContent = { Text(fitBuddyChallenge.lastChallengeTitle, style = MaterialTheme.typography.bodySmall) },
+        headlineContent = {
+            Text(
+                fitBuddyChallenge.fitBuddyName,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        supportingContent = {
+            Text(
+                fitBuddyChallenge.lastChallengeTitle,
+                style = MaterialTheme.typography.bodySmall
+            )
+        },
         leadingContent = {
             Surface(
                 modifier = Modifier
@@ -194,4 +287,3 @@ fun FitBuddyChallengeItem(fitBuddyChallenge: FitBuddyChallenge) {
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
     )
 }
-

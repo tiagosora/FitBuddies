@@ -25,6 +25,7 @@ sealed class NavigationItem(
     data object Profile : NavigationItem("profile", Icons.Default.AccountCircle, "Profile")
 
     data object Add : NavigationItem("add", Icons.Default.Add, "Add")
+
 }
 
 @Composable
@@ -61,7 +62,7 @@ fun BottomNavigationBar(
                 NavigationItem.Home,
                 NavigationItem.Friends,
                 NavigationItem.Challenges,
-                NavigationItem.Profile
+                NavigationItem.Profile,
             )
 
             items.forEachIndexed { index, item ->

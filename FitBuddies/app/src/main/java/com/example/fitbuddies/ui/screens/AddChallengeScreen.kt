@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.AddChallengeViewModel
@@ -26,6 +27,7 @@ fun AddChallengeScreen(
     var duration by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var imageUri by remember { mutableStateOf<String?>(null) }
+    var goal by remember { mutableStateOf("") }
 
     val scrollState = rememberScrollState()
 
@@ -116,7 +118,7 @@ fun AddChallengeScreen(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                listOf("Running", "Cycling", "Weightlifting", "Yoga").forEach { type ->
+                listOf("Running", "Cycling", "Weightlifting", "Yoga", "Other").forEach { type ->
                     DropdownMenuItem(
                         text = { Text(type) },
                         onClick = {
@@ -136,6 +138,22 @@ fun AddChallengeScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        OutlinedTextField(
+            value = goal,
+            onValueChange = { goal = it },
+            label = {
+                Text(
+                    if (selectedType == "Running" || selectedType == "Cycling")
+                        "Goal (km)"
+                    else
+                        "Goal (hours)"
+                )
+            },
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+
         Button(
             onClick = { /* TODO: Implement friend selection */ },
             modifier = Modifier.fillMaxWidth()
@@ -147,7 +165,7 @@ fun AddChallengeScreen(
 
         Button(
             onClick = {
-                viewModel.createChallenge(title, description, selectedType, duration.toIntOrNull() ?: 7)
+                viewModel.createChallenge(title, description, selectedType, duration.toIntOrNull() ?: 7, goal.toIntOrNull() ?: 10)
             },
             modifier = Modifier.fillMaxWidth()
         ) {

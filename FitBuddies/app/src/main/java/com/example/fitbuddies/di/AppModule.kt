@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import com.example.fitbuddies.data.repositories.ChallengeRepository
 import com.example.fitbuddies.data.repositories.FriendshipRepository
 import com.example.fitbuddies.data.repositories.UserRepository
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,6 +52,14 @@ object AppModule {
     @Singleton
     fun provideUserRepository(): UserRepository {
         return UserRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFusedLocationClient(
+        @ApplicationContext context: Context
+    ): FusedLocationProviderClient {
+        return LocationServices.getFusedLocationProviderClient(context)
     }
 
 }
