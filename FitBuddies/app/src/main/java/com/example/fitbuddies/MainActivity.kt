@@ -23,6 +23,7 @@ import com.example.fitbuddies.data.models.User
 import com.example.fitbuddies.qr.QRCodeScannerWithPermission
 import com.example.fitbuddies.ui.components.BottomNavigationBar
 import com.example.fitbuddies.ui.components.NavigationItem
+import com.example.fitbuddies.ui.components.NotificationsDropdown
 import com.example.fitbuddies.ui.screens.*
 import com.example.fitbuddies.ui.theme.FitBuddiesTheme
 import com.example.fitbuddies.viewmodels.*
@@ -161,7 +162,7 @@ fun MainScreen(
 ) {
     var currentRoute by remember { mutableStateOf(NavigationItem.Home.route) }
     val user by profileViewModel.user.collectAsState()
-
+    var isNotificationsDropdownOpen by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -185,8 +186,20 @@ fun MainScreen(
                     }) {
                         Icon(Icons.Default.QrCode, contentDescription = "Scan QR Code")
                     }
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                    Box {
+                        IconButton(onClick = { isNotificationsDropdownOpen = !isNotificationsDropdownOpen }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                        }
+
+                        // Dropdown de notificações
+                        DropdownMenu(
+                            expanded = isNotificationsDropdownOpen,
+                            onDismissRequest = { isNotificationsDropdownOpen = false }
+                        ) {
+                            NotificationsDropdown(
+                                onDismiss = { isNotificationsDropdownOpen = false }
+                            )
+                        }
                     }
                     IconButton(onClick = { /* TODO */ }) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")

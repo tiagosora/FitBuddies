@@ -19,7 +19,6 @@ import javax.inject.Singleton
 object AppModule {
 
     // Context
-
     @Provides
     @Singleton
     fun provideContext(application: FitBuddiesApplication): Context {
@@ -27,7 +26,6 @@ object AppModule {
     }
 
     // SharedPreferences
-
     @Provides
     @Singleton
     fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
@@ -35,7 +33,6 @@ object AppModule {
     }
 
     // Repositories
-
     @Provides
     @Singleton
     fun provideChallengeRepository(): ChallengeRepository {
@@ -44,16 +41,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFriendshipRepository(): FriendshipRepository {
-        return FriendshipRepository()
-    }
-
-    @Provides
-    @Singleton
     fun provideUserRepository(): UserRepository {
         return UserRepository()
     }
 
+    // FusedLocationProviderClient
     @Provides
     @Singleton
     fun provideFusedLocationClient(
@@ -61,5 +53,4 @@ object AppModule {
     ): FusedLocationProviderClient {
         return LocationServices.getFusedLocationProviderClient(context)
     }
-
 }

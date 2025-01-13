@@ -1,6 +1,8 @@
 package com.example.fitbuddies.data.repositories
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import com.example.fitbuddies.data.models.Challenge
 import com.example.fitbuddies.data.remote.Supabase.client
 import io.github.jan.supabase.postgrest.from
@@ -13,16 +15,20 @@ import java.io.ByteArrayOutputStream
 
 class ChallengeRepository() {
 
-    suspend fun createChallenge(userId: String, title: String, description: String, type: String, duration: Int, goal: Int, pictureBitmap: Bitmap): Challenge? {
+    suspend fun createChallenge(userId: String, title: String, description: String, type: String, duration: Long, goal: Int, pictureImageBitmap: ImageBitmap?): Challenge? {
         val newChallenge = Challenge(title = title, description = description, type = type, daredById = userId, deadlineDate = duration.toString(), goal = goal)
 
-        val path = "images/${newChallenge.pictureUrl}"
-        newChallenge.pictureUrl = path
+        if (pictureImageBitmap != null) {
+            val path = "images/${newChallenge.pictureUrl}"
+            newChallenge.pictureUrl = path
 
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        pictureBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+            val pictureBitmap: Bitmap = pictureImageBitmap.asAndroidBitmap()
 
-        BucketRepository.uploadImage(path, byteArrayOutputStream.toByteArray())
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            pictureBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+
+            BucketRepository.uploadImage(path, byteArrayOutputStream.toByteArray())
+        }
 
         val response = client.from("challenges").insert(newChallenge) {
             select()

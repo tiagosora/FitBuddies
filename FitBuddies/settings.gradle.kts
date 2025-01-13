@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "FitBuddies"
 include(":app")
+include(":watch")
