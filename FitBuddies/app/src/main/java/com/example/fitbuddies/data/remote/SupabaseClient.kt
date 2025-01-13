@@ -2,6 +2,7 @@ package com.example.fitbuddies.data.remote
 
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.storage.Storage
 
 
 object Supabase {
@@ -16,5 +17,6 @@ object Supabase {
         supabaseKey = ANON_KEY
     ) {
         install(Postgrest)
+        install(Storage)
     }
 }

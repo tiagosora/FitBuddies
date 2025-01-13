@@ -1,35 +1,32 @@
 package com.example.fitbuddies.viewmodels
 
+import android.content.SharedPreferences
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.fitbuddies.data.models.Challenge
+import com.example.fitbuddies.data.repositories.ChallengeRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AddChallengeViewModel : ViewModel() {
-    private val _creationStatus = MutableStateFlow<CreationStatus>(CreationStatus.Idle)
-    val creationStatus: StateFlow<CreationStatus> = _creationStatus.asStateFlow()
+@HiltViewModel
+class AddChallengeViewModel @Inject constructor(
+    private val sharedPreferences: SharedPreferences,
+    private val challengeRepository: ChallengeRepository = ChallengeRepository()
+) : ViewModel() {
 
-    fun createChallenge(title: String, description: String, type: String, duration: Int, goal: Int) {
+
+    fun createChallenge(title: String, description: String, type: String, duration: Int, goal: Int, photoBitmap: Bitmap): Challenge? {
         viewModelScope.launch {
-            _creationStatus.value = CreationStatus.Loading
-            try {
-                // TODO: Implement challenge creation logic
-                // This is where you would typically make an API call or update local storage
-                // For now, we'll just simulate a delay
-                kotlinx.coroutines.delay(1000)
-                _creationStatus.value = CreationStatus.Success
-            } catch (e: Exception) {
-                _creationStatus.value = CreationStatus.Error(e.message ?: "Unknown error occurred")
+            val userId = sharedPreferences.getString("currentUserId", null)
+            if (userId != null) {
+                val newChallenge = challengeRepository.createChallenge(userId, title, description, type, duration, goal, photoBitmap)
+                println("New challenge created: $newChallenge")
             }
+            println("Failed to get current user id")
         }
+        return null
     }
 
-    sealed class CreationStatus {
-        data object Idle : CreationStatus()
-        data object Loading : CreationStatus()
-        data object Success : CreationStatus()
-        data class Error(val message: String) : CreationStatus()
-    }
 }

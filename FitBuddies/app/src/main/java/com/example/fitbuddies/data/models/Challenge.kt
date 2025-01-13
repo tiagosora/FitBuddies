@@ -21,5 +21,7 @@ data class Challenge(
     @SerialName("type") val type: String,
     @SerialName("daredbyid") val daredById: String,
     @SerialName("creationdate") val creationDate: String = System.currentTimeMillis().toString(),
-    @SerialName("deadlinedate") val deadlineDate: String? = null
+    @SerialName("deadlinedate") val deadlineDate: String? = null,
+    @SerialName("goal") val goal: Int = 0,
+    @SerialName("pictureurl") var pictureUrl: String? = null
 )

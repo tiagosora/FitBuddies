@@ -18,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import com.example.fitbuddies.ai.AiClient.generateFitnessChallenge
 import com.example.fitbuddies.data.models.User
 import com.example.fitbuddies.qr.QRCodeScannerWithPermission
 import com.example.fitbuddies.ui.components.BottomNavigationBar
@@ -39,6 +40,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val isOnboardingCompleted = sharedPreferences.getBoolean("onboarding_completed", false)
+
+//        val testAI = generateFitnessChallenge("Running")
+//        Log.d("AI", testAI.toString())
 
         setContent {
             FitBuddiesTheme {

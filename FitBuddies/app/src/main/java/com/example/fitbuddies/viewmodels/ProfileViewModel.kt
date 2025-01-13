@@ -1,7 +1,6 @@
 package com.example.fitbuddies.viewmodels
 
 import android.content.SharedPreferences
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitbuddies.data.models.User

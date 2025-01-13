@@ -86,6 +86,7 @@ dependencies {
 
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.0"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:realtime-kt")
     implementation("androidx.compose.foundation:foundation")
@@ -98,6 +99,9 @@ dependencies {
     implementation ("androidx.camera:camera-camera2:1.3.0-alpha07")
     implementation ("androidx.camera:camera-lifecycle:1.3.0-alpha07")
     implementation ("androidx.camera:camera-view:1.3.0-alpha07")
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     // ZXing para leitura de QR (se preferir MLKit, use as libs correspondentes)
     implementation ("com.google.zxing:core:3.5.0")

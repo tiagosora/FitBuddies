@@ -1,5 +1,7 @@
 package com.example.fitbuddies.data.repositories
 
+import android.graphics.Bitmap
+import com.example.fitbuddies.data.models.Challenge
 import com.example.fitbuddies.data.remote.Supabase.client
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
@@ -7,8 +9,36 @@ import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.io.ByteArrayOutputStream
 
 class ChallengeRepository() {
+
+    suspend fun createChallenge(userId: String, title: String, description: String, type: String, duration: Int, goal: Int, pictureBitmap: Bitmap): Challenge? {
+        val newChallenge = Challenge(title = title, description = description, type = type, daredById = userId, deadlineDate = duration.toString(), goal = goal)
+
+        val path = "images/${newChallenge.pictureUrl}"
+        newChallenge.pictureUrl = path
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        pictureBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+
+        BucketRepository.uploadImage(path, byteArrayOutputStream.toByteArray())
+
+        val response = client.from("challenges").insert(newChallenge) {
+            select()
+        }
+        try {
+            println("Create Challenge Response: ${response.data}")
+            val decodedResponse: Challenge = Json.decodeFromString(response.data)
+            println("Decoded Challenge: $decodedResponse")
+            return decodedResponse
+        } catch (e: Exception) {
+            println("Deserialization Error: ${e.message}")
+            return null
+        }
+    }
+
+
     suspend fun getActiveUserChallenges(userId: String): List<DareToChallengeResponse> {
 
         val columns = Columns.raw("""

@@ -1,42 +1,86 @@
 package com.example.fitbuddies.ui.screens
 
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.AddChallengeViewModel
+import com.example.fitbuddies.viewmodels.ProfileViewModel
 
 @Composable
 fun AddChallengeScreen(
-    viewModel: AddChallengeViewModel = hiltViewModel()
+    addChallengeViewModel: AddChallengeViewModel = hiltViewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf("Running") }
     var duration by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    var imageUri by remember { mutableStateOf<String?>(null) }
+    var expandedImage by remember { mutableStateOf(false) }
     var goal by remember { mutableStateOf("") }
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+
+    val context = LocalContext.current
 
     val scrollState = rememberScrollState()
+    val user by profileViewModel.user.collectAsState()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    val bitmap = ImageDecoder.decodeBitmap(source)
+                    imageBitmap = bitmap.asImageBitmap()
+                } else {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val bitmap = BitmapFactory.decodeStream(inputStream)
+                    inputStream?.close()
+                    imageBitmap = bitmap?.asImageBitmap()
+                }
+            }
+        }
+    )
+
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview(),
+        onResult = { bitmap ->
+            bitmap?.let {
+                imageBitmap = it.asImageBitmap()
+            }
+        }
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(16.dp) // Increased spacing between items
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.Top,
@@ -50,16 +94,42 @@ fun AddChallengeScreen(
                         MaterialTheme.colorScheme.primary,
                         shape = MaterialTheme.shapes.small
                     )
-                    .clickable {
-                        // TODO: Implement image picker functionality here
-                    },
+                    .clickable { expandedImage = true },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.AddAPhoto,
-                    contentDescription = "Add Image",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+                if (imageBitmap != null) {
+                    Image(
+                        bitmap = imageBitmap!!,
+                        contentDescription = "Selected Image",
+                        modifier = Modifier.size(64.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.AddAPhoto,
+                        contentDescription = "Add Image",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expandedImage,
+                    onDismissRequest = { expandedImage = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Choose from Gallery") },
+                        onClick = {
+                            expandedImage = false
+                            launcher.launch("image/*")
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Take a Photo") },
+                        onClick = {
+                            expandedImage = false
+                            cameraLauncher.launch(null)
+                        }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -71,7 +141,7 @@ fun AddChallengeScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "by John Doe",
+                    text = "by ${user?.firstName ?: "Guest"} ${user?.lastName ?: ""}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Medium
                 )
@@ -165,7 +235,14 @@ fun AddChallengeScreen(
 
         Button(
             onClick = {
-                viewModel.createChallenge(title, description, selectedType, duration.toIntOrNull() ?: 7, goal.toIntOrNull() ?: 10)
+                addChallengeViewModel.createChallenge(
+                    title = title,
+                    description = description,
+                    type = selectedType,
+                    duration = duration.toInt(),
+                    goal = goal.toInt(),
+                    photoBitmap = imageBitmap
+                )
             },
             modifier = Modifier.fillMaxWidth()
         ) {
