@@ -48,7 +48,7 @@ class FitBuddiesViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = sharedPreferences.getString("currentUserId", null)
             if (userId != null) {
-                val fitBuddiesDetailsWithChallenges: List<FitBuddyCountChallenges> = friendshipRepository.getFitBuddiesDetailsWitCountChallenges(userId)
+                val fitBuddiesDetailsWithChallenges: List<FitBuddyCountChallenges> = friendshipRepository.getFitBuddiesDetailsWithCountChallenges(userId)
                 _fitBuddies.value = fitBuddiesDetailsWithChallenges.map {
                     FitBuddy(it.fitbuddyid, "${it.firstname} ${it.lastname}", it.challengescompletedcount, it.profilepictureurl)
                 }

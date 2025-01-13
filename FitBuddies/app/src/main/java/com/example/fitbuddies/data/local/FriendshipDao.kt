@@ -11,9 +11,13 @@ import com.example.fitbuddies.data.models.Friendship
 @Dao
 interface FriendshipDao {
 
-    // Get all friendships for a user
-    @Query("SELECT * FROM friendships WHERE userId = :userId")
-    fun getFriendshipsForUser(userId: String): Flow<List<Friendship>>
+    // Get all friendships for a user (accepted only)
+    @Query("SELECT * FROM friendships WHERE (userId = :userId OR friendId = :userId) AND isAccepted = 1")
+    fun getAcceptedFriendships(userId: String): Flow<List<Friendship>>
+
+    // Get pending friendship requests for a user
+    @Query("SELECT * FROM friendships WHERE friendId = :userId AND isAccepted = 0")
+    fun getPendingFriendshipRequests(userId: String): Flow<List<Friendship>>
 
     // Accept a friend request
     @Query("UPDATE friendships SET isAccepted = 1 WHERE userId = :userId AND friendId = :friendId")
@@ -24,6 +28,10 @@ interface FriendshipDao {
     suspend fun insertFriendship(friendship: Friendship)
 
     // Decline a friend request
-    @Delete
-    suspend fun deleteFriendship(friendship: Friendship)
+    @Query("DELETE FROM friendships WHERE userId = :userId AND friendId = :friendId")
+    suspend fun declineFriendRequest(userId: String, friendId: String)
+
+    // Remove a friendship (unfriend)
+    @Query("DELETE FROM friendships WHERE (userId = :userId AND friendId = :friendId) OR (userId = :friendId AND friendId = :userId)")
+    suspend fun removeFriendship(userId: String, friendId: String)
 }
