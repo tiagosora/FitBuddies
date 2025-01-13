@@ -5,17 +5,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.fitbuddies.viewmodels.AddChallengeViewModel
+import com.example.fitbuddies.data.models.Friendship
+import com.example.fitbuddies.data.models.User
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddChallengeScreen(
@@ -28,6 +34,8 @@ fun AddChallengeScreen(
     var expanded by remember { mutableStateOf(false) }
     var imageUri by remember { mutableStateOf<String?>(null) }
     var goal by remember { mutableStateOf("") }
+    var showModal by remember { mutableStateOf(false) }
+    val selectedFriends = remember { mutableStateListOf<User>() } // Alterado para `User`
 
     val scrollState = rememberScrollState()
 
@@ -36,7 +44,7 @@ fun AddChallengeScreen(
             .fillMaxSize()
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(16.dp) // Increased spacing between items
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.Top,
@@ -153,14 +161,27 @@ fun AddChallengeScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-
         Button(
-            onClick = { /* TODO: Implement friend selection */ },
+            onClick = {
+                showModal = true
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Default.Group, contentDescription = "Invite Friends")
             Spacer(modifier = Modifier.width(8.dp))
             Text("Invite Friends")
+        }
+
+        if (showModal) {
+            InviteFriendsModal(
+                onDismiss = { showModal = false },
+                onConfirm = { friends ->
+                    selectedFriends.clear()
+                    selectedFriends.addAll(friends) // Recebe `User` diretamente
+                    showModal = false
+                },
+                viewModel = viewModel
+            )
         }
 
         Button(
@@ -170,6 +191,104 @@ fun AddChallengeScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Create Challenge")
+        }
+    }
+}
+
+
+@Composable
+fun InviteFriendsModal(
+    onDismiss: () -> Unit,
+    onConfirm: (List<User>) -> Unit,
+    viewModel: AddChallengeViewModel
+) {
+    val coroutineScope = rememberCoroutineScope()
+    var searchQuery by remember { mutableStateOf("") }
+    val friends = remember { mutableStateListOf<User>() }
+    val selectedFriends = remember { mutableStateListOf<User>() }
+
+    // Buscar amigos ao abrir o modal
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            val result = viewModel.fetchFriends()
+            friends.clear()
+            friends.addAll(result)
+        }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            tonalElevation = 4.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Invite Friends",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                // Campo de busca
+                BasicTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = 16.sp)
+                )
+
+                // Lista de amigos filtrados
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    friends.filter { "${it.firstName} ${it.lastName}".contains(searchQuery, ignoreCase = true) }
+                        .forEach { friend ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (selectedFriends.contains(friend)) {
+                                            selectedFriends.remove(friend)
+                                        } else {
+                                            selectedFriends.add(friend)
+                                        }
+                                    }
+                                    .padding(8.dp)
+                            ) {
+                                Checkbox(
+                                    checked = selectedFriends.contains(friend),
+                                    onCheckedChange = null
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("${friend.firstName} ${friend.lastName}", fontSize = 16.sp)
+                            }
+                        }
+                }
+
+                // Botões de Cancelar e Confirmar
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("Cancel")
+                    }
+                    TextButton(onClick = { onConfirm(selectedFriends) }) {
+                        Text("Confirm")
+                    }
+                }
+            }
         }
     }
 }
