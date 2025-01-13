@@ -3,15 +3,26 @@
   <component name="deploymentTargetSelector">
     <selectionStates>
       <SelectionState runConfigName="app">
-          <option name="selectionMode" value="DROPDOWN" />
-          <DropdownSelection timestamp="2024-12-08T16:35:01.444819193Z">
-              <Target type="DEFAULT_BOOT">
-                  <handle>
-                      <DeviceId pluginId="LocalEmulator" identifier="path=/home/liarc301/.android/avd/Medium_Phone_API_27.avd" />
-                  </handle>
-              </Target>
-          </DropdownSelection>
-          <DialogSelection />
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2024-12-08T16:35:01.444819193Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/liarc301/.android/avd/Medium_Phone_API_27.avd" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="watch">
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-01-13T17:48:24.381037462Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/lilikas11/.var/app/com.google.AndroidStudio/config/.android/avd/Medium_Phone_API_35.avd" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
       </SelectionState>
     </selectionStates>
   </component>
