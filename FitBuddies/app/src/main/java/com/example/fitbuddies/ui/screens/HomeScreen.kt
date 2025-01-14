@@ -39,6 +39,9 @@ import com.example.fitbuddies.viewmodels.HomeViewModel
 import com.example.fitbuddies.viewmodels.HomeViewModel.ActiveChallenge
 import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.collectAsState
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -155,6 +158,8 @@ fun YourActivityTab(
 fun DailyActivitySummary(
     homeViewModel: HomeViewModel,
 ) {
+    val dailySteps = homeViewModel.dailySteps.collectAsState().value
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -176,7 +181,7 @@ fun DailyActivitySummary(
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    homeViewModel.dailySteps.toString(),
+                    dailySteps.toString(),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold

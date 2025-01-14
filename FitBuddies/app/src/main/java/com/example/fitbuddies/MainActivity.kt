@@ -29,9 +29,19 @@ import com.example.fitbuddies.viewmodels.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val viewModel: HomeViewModel by viewModels()
+
 
     @Inject
     lateinit var sharedPreferences: android.content.SharedPreferences
@@ -108,6 +118,49 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        lifecycleScope.launch {
+            viewModel.hasStepPermission.collect { hasPermission ->
+                if (!hasPermission) {
+                    requestStepPermission()
+                }
+            }
+        }
+    }
+
+    private fun requestStepPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
+                ACTIVITY_RECOGNITION_REQUEST_CODE
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            ACTIVITY_RECOGNITION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    viewModel.checkPermissionAndRegisterSensor()
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Permissão necessária para contar passos",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val ACTIVITY_RECOGNITION_REQUEST_CODE = 100
     }
 }
 
@@ -232,4 +285,5 @@ fun MainScreen(
             }
         }
     }
+
 }
