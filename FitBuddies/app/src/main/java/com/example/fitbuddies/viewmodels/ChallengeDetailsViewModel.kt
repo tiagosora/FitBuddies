@@ -1,55 +1,70 @@
+package com.example.fitbuddies.viewmodels
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.fitbuddies.data.models.Dare
+import com.example.fitbuddies.data.models.User
+import com.example.fitbuddies.data.repositories.ChallengeRepository
+import com.example.fitbuddies.data.repositories.DareRepository
+import com.example.fitbuddies.data.repositories.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class Participant(
     val id: String,
     val name: String,
-    val avatarUrl: String
+    val avatarUrl: String?
 )
 
 data class ChallengeDetails(
     val id: String,
     val name: String,
-    val imageUrl: String,
+    val imageUrl: String?,
     val description: String,
     val type: String,
-    val duration: String,
+    val deadline: String,
     val goal: Int,
-    val goalCompletion : Int,
     val participants: List<Participant>
 )
 
-class ChallengeDetailsViewModel : ViewModel() {
+@HiltViewModel
+class ChallengeDetailsViewModel @Inject constructor(
+    private val challengeRepository: ChallengeRepository,
+    private val dareRepository: DareRepository,
+    private val userRepository: UserRepository
+) : ViewModel() {
+
     private val _challengeDetails = MutableStateFlow<ChallengeDetails?>(null)
     val challengeDetails: StateFlow<ChallengeDetails?> = _challengeDetails.asStateFlow()
 
     fun loadChallengeDetails(challengeId: String) {
         viewModelScope.launch {
-            // In a real app, you would fetch this data from a repository or API
+            val challenge = challengeRepository.getChallengeById(challengeId)
+            var associatedDares : List<Dare> = dareRepository.getDaredByChallengeId(challengeId)
+            var participantsIds : List<String> = associatedDares.map { it.daredToId }
+            var participants: List<User> = userRepository.getUsersByIds(participantsIds)
+
+            if (challenge == null) {
+                _challengeDetails.value = null
+                return@launch
+            }
+
             _challengeDetails.value = ChallengeDetails(
                 id = challengeId,
-                name = "30-Day Running Challenge",
-                imageUrl = "https://example.com/running-challenge.jpg",
-                description = "Run every day for 30 days to improve your endurance and overall fitness. You can do this bestie, I believe in you you know that hahhahahah slay queen aaaaa",
-                duration = "30 days",
-                type = "Running",
-                goal = 30,
-                goalCompletion = 20,
-                participants = listOf(
-                    Participant("1", "John Doe", "https://example.com/john.jpg"),
-                    Participant("2", "Jane Smith", "https://example.com/jane.jpg"),
-                    Participant("3", "Mike Johnson", "https://example.com/mike.jpg")
-                )
+                name = challenge.title,
+                imageUrl = challenge.pictureUrl,
+                description = challenge.description,
+                deadline = challenge.deadlineDate.toString(),
+                type = challenge.type,
+                goal = challenge.goal,
+                participants = participants.map { Participant(it.userId,"${it.firstName} ${it.lastName}", it.profilePictureUrl) }
             )
-        }
-    }
 
-    fun onQRCodeClick() {
-        // TODO: Implement logic to open QR code in a modal view
+        }
     }
 }
 

@@ -42,44 +42,54 @@ object AiClient {
 
 
 
-    fun generateFitnessChallenge(challengeType : String): Map<String, Any>? {
+    fun generateFitnessChallenge(
+        challengeType: String,
+        callback: (Map<String, Any>?) -> Unit
+    ) {
         val apiService = create()
 
         val request = ChatGPTRequest(
             model = "gpt-3.5-turbo",
             messages = listOf(
                 mapOf("role" to "system", "content" to "You are a fitness expert."),
-                mapOf("role" to "user", "content" to "According to the challenge type ($challengeType), generate a fitness challenge in JSON format. The format must be {title: challenge_title, description: challenge_description}. You must only respond with that json format. You must only respond in that JSON format. The description must not exceed 200 characters."),
-                mapOf("role" to "user", "content" to "The exercise must be concluded by a normal person within a normal timeframe."),
+                mapOf(
+                    "role" to "user", "content" to """
+                According to the challenge type ($challengeType), generate a fitness challenge in JSON format. 
+                The format must be {title: challenge_title, description: challenge_description, duration: duration_in_days, goal: challenge_goal}. 
+                You must only respond with that JSON format. 
+                The description must not exceed 200 characters. 
+                Duration (days) must be a single integer (not Float or Double, ex. 28.0 or 28.00 or 28.000). 
+                Goal must be a single integer (not Float or Double) representing Km (when challenge type is Running) or Hours otherwise. 
+                The exercise must be concluded by a normal person within a normal timeframe.
+            """.trimIndent()
+                )
             )
         )
-
-        var returnValue: Map<String, Any>? = null
 
         apiService.sendMessage(request).enqueue(object : Callback<ChatGPTResponse> {
             override fun onResponse(call: Call<ChatGPTResponse>, response: Response<ChatGPTResponse>) {
                 if (response.isSuccessful) {
                     response.body()?.choices?.get(0)?.message?.get("content")?.let { content ->
                         try {
-                            returnValue = parseFitnessChallenge(content)
-                            println("Parsed Challenge: $returnValue")
+                            val parsedChallenge = parseFitnessChallenge(content)
+                            println("Parsed Challenge: $parsedChallenge")
+                            callback(parsedChallenge) // Pass the result to the callback
                         } catch (e: Exception) {
                             println("Failed to parse challenge: ${e.message}")
+                            callback(null)
                         }
-                    }
+                    } ?: callback(null) // Handle null content
                 } else {
                     println("Error: ${response.errorBody()?.string()}")
+                    callback(null)
                 }
             }
 
-
             override fun onFailure(call: Call<ChatGPTResponse>, t: Throwable) {
                 println("Failed to communicate: ${t.message}")
+                callback(null)
             }
         })
-
-        return returnValue
-        println("Generated Challenge: $returnValue")
     }
 
 

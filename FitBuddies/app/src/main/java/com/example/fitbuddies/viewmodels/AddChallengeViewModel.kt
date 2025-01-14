@@ -5,12 +5,14 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitbuddies.data.models.Challenge
+import com.example.fitbuddies.data.models.Dare
 import com.example.fitbuddies.data.repositories.ChallengeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 //import com.example.fitbuddies.data.models.Friendship
 import com.example.fitbuddies.data.models.User
+import com.example.fitbuddies.data.repositories.DareRepository
 import com.example.fitbuddies.data.repositories.FriendshipRepository
 import com.example.fitbuddies.data.repositories.UserRepository
 import kotlinx.coroutines.Dispatchers
@@ -22,19 +24,30 @@ class AddChallengeViewModel @Inject constructor(
     private val friendshipRepository: FriendshipRepository,
     private val userRepository: UserRepository,
     private val sharedPreferences: SharedPreferences,
-    private val challengeRepository: ChallengeRepository = ChallengeRepository()
+    private val challengeRepository: ChallengeRepository,
+    private val dareRepository: DareRepository
 ) : ViewModel() {
 
 //    private val _friendsList = MutableStateFlow<List<Friendship>>(emptyList())
 //    val friendsList: StateFlow<List<Friendship>> = _friendsList.asStateFlow()
 
-    fun createChallenge(title: String, description: String, type: String, duration: Int, goal: Int, photoBitmap: ImageBitmap?): Challenge? {
+    fun createChallenge(title: String, description: String, type: String, selectedFriends: List<User>, duration: Int, goal: Int, photoBitmap: ImageBitmap?): Challenge? {
         viewModelScope.launch {
             val userId = sharedPreferences.getString("currentUserId", null)
             // current date + duration
             if (userId != null) {
+                println("Selected friends: $selectedFriends")
+
                 val newChallenge = challengeRepository.createChallenge(userId, title, description, type, System.currentTimeMillis() + duration, goal, photoBitmap)
                 println("New challenge created: $newChallenge")
+
+                if (newChallenge != null) {
+                    for (friend in selectedFriends) {
+                        println("Daring friend: $friend")
+                        val newDare = Dare(challengeId = newChallenge.challengeId, daredToId = friend.userId)
+                        dareRepository.createDare(newDare)
+                    }
+                }
             }
             println("Failed to get current user id")
         }

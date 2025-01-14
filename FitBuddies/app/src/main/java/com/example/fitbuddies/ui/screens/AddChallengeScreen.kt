@@ -15,12 +15,14 @@ import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.example.fitbuddies.ui.components.NavigationItem
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -28,13 +30,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.example.fitbuddies.ai.AiClient.generateFitnessChallenge
 import com.example.fitbuddies.viewmodels.AddChallengeViewModel
 import com.example.fitbuddies.viewmodels.ProfileViewModel
 import com.example.fitbuddies.data.models.User
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddChallengeScreen(
+    navController: NavHostController,
     addChallengeViewModel: AddChallengeViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -204,6 +210,27 @@ fun AddChallengeScreen(
             }
         }
 
+        Button(
+            onClick = {
+                generateFitnessChallenge(selectedType) { aiResponse ->
+                    if (aiResponse == null) {
+                        println("Failed to generate challenge.")
+                        return@generateFitnessChallenge
+                    }
+
+                    title = aiResponse["title"] as String
+                    description = aiResponse["description"] as String
+                    duration = aiResponse["duration"].toString().removeSuffix(".0")
+                    goal = aiResponse["goal"].toString().removeSuffix(".0")
+                }
+            },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+        ) {
+            Icon(Icons.Default.AddTask, contentDescription = "Generate Challenge Using AI")
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Generate Challenge Using AI")
+        }
+
         OutlinedTextField(
             value = duration,
             onValueChange = { duration = it },
@@ -231,7 +258,7 @@ fun AddChallengeScreen(
             onClick = {
                 showModal = true
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
         ) {
             Icon(Icons.Default.Group, contentDescription = "Invite Friends")
             Spacer(modifier = Modifier.width(8.dp))
@@ -252,16 +279,24 @@ fun AddChallengeScreen(
 
         Button(
             onClick = {
+                if (title.isEmpty() || description.isEmpty() || duration.isEmpty() || goal.isEmpty()) {
+                    duration = 0.toString()
+                    goal = 0.toString()
+                }
                 addChallengeViewModel.createChallenge(
                     title = title,
                     description = description,
                     type = selectedType,
+                    selectedFriends = selectedFriends,
                     duration = duration.toInt(),
                     goal = goal.toInt(),
                     photoBitmap = imageBitmap
                 )
+                navController.navigate("main") {
+                    popUpTo("main") { inclusive = true }
+                }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
         ) {
             Text("Create Challenge")
         }

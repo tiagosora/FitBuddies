@@ -2,11 +2,11 @@ package com.example.fitbuddies.data.repositories
 
 import com.example.fitbuddies.data.models.Dare
 import com.example.fitbuddies.data.models.Challenge
+import com.example.fitbuddies.data.models.User
 import com.example.fitbuddies.viewmodels.NotificationsViewModel
 import com.example.fitbuddies.data.remote.Supabase.client
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 import javax.inject.Inject
 
 class DareRepository @Inject constructor(
@@ -18,7 +18,7 @@ class DareRepository @Inject constructor(
 
             val response = client.from("challenges").select {
                 filter {
-                    eq("challengeId", dare.challengeId)
+                    eq("challengeid", dare.challengeId)
                 }
             }
 
@@ -33,6 +33,24 @@ class DareRepository @Inject constructor(
             )
         } catch (e: Exception) {
             println("Error creating dare: ${e.message}")
+        }
+    }
+
+    suspend fun getDaredByChallengeId(challengeId: String): List<Dare> {
+        val response = client.from("dares").select {
+            filter {
+                and {
+                    eq("challengeid", challengeId)
+                    eq("isaccepted", true)
+                }
+            }
+        }
+        try {
+            val decodedDares: List<Dare> = Json.decodeFromString(response.data)
+            return decodedDares
+        } catch (e: Exception) {
+            println("Error getting dared users: ${e.message}")
+            return emptyList()
         }
     }
 }

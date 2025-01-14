@@ -18,7 +18,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
-import com.example.fitbuddies.ai.AiClient.generateFitnessChallenge
 import com.example.fitbuddies.data.models.User
 import com.example.fitbuddies.qr.QRCodeScannerWithPermission
 import com.example.fitbuddies.ui.components.BottomNavigationBar
@@ -42,9 +41,6 @@ class MainActivity : ComponentActivity() {
 
         val isOnboardingCompleted = sharedPreferences.getBoolean("onboarding_completed", false)
 
-//        val testAI = generateFitnessChallenge("Running")
-//        Log.d("AI", testAI.toString())
-
         setContent {
             FitBuddiesTheme {
                 val navController = rememberNavController()
@@ -57,7 +53,7 @@ class MainActivity : ComponentActivity() {
 
                 // Exemplo fixo de currentUserId
                 sharedPreferences.edit()
-                    .putString("currentUserId", "2eef40fc-3223-4bb2-8003-6af0e45dfc53")
+                    .putString("currentUserId", "9eeabe76-f8fe-4236-8116-73c2ca772689")
                     .apply()
 
                 val authenticationViewModel = viewModel<AuthenticationViewModel>()
@@ -108,7 +104,6 @@ class MainActivity : ComponentActivity() {
                         else -> currentScreen = "onboarding"
                     }
                 } else {
-                    // Se já estiver autenticado, entra no app principal
                     MainApp(navController)
                 }
             }
@@ -131,7 +126,7 @@ fun MainApp(navController: NavHostController) {
         composable(
             route = "route_map",
         ) {
-            RouteScreen(onPermissionDenied = {/* TODO: IMPLEMENTAR AÇÂO */},
+            RouteScreen(onPermissionDenied = {},
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -231,7 +226,7 @@ fun MainScreen(
                 NavigationItem.Friends.route -> FitBuddiesScreen()
                 NavigationItem.Challenges.route -> ChallengesScreen()
                 NavigationItem.Profile.route -> ProfileScreen()
-                NavigationItem.Add.route -> AddChallengeScreen()
+                NavigationItem.Add.route -> AddChallengeScreen(navController)
                 else -> HomeScreen(navController)
 
             }

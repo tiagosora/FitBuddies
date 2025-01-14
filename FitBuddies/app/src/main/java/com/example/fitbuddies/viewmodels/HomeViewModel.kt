@@ -24,7 +24,7 @@ class HomeViewModel @Inject constructor(
     private val challengeRepository: ChallengeRepository
 ): ViewModel() {
 
-    val dailySteps: Int = 8234 // TODO: Get daily steps from Watch API
+    val dailySteps: Int = 8234
 
     private val _activeChallenges = MutableStateFlow<List<ActiveChallenge>>(emptyList())
     val activeChallenges: StateFlow<List<ActiveChallenge>> = _activeChallenges.asStateFlow()

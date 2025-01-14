@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.math.BigInteger
 
 @Serializable
 @Entity(
@@ -18,5 +19,5 @@ data class Friendship(
     @SerialName("userid") val userId: String,
     @SerialName("friendid") val friendId: String,
     @SerialName("isaccepted") val isAccepted: Boolean = false,
-    @SerialName("creationdate") val creationDate: String = System.currentTimeMillis().toString()
+    @SerialName("creationdate") val creationDate: Long = System.currentTimeMillis().toLong()
 )

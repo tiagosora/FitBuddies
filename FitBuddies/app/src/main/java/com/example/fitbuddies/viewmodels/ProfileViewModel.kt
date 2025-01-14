@@ -48,7 +48,7 @@ class ProfileViewModel @Inject constructor(
             if (userId != null) {
                 val userCompletedChallengesData = challengeRepository.getUserCompletedChallenges(userId)
                 _userCompletedChallenges.value = userCompletedChallengesData.map {
-                    ChallengeInfo(it.challenges.title, it.challenges.type, it.completiondate.substring(0..9), it.challenges.description)
+                    ChallengeInfo(it.challenges.title, it.challenges.type, it.completiondate.toString().substring(0..9), it.challenges.description)
                 }
             }
         }

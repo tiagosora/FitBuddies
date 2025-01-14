@@ -34,7 +34,7 @@ CREATE TABLE friendships (
     userId UUID REFERENCES users(userId) ON DELETE CASCADE,
     friendId UUID REFERENCES users(userId) ON DELETE CASCADE,
     isAccepted BOOLEAN DEFAULT FALSE,
-    creationDate TIMESTAMP DEFAULT now(),
+    creationDate BIGINT DEFAULT EXTRACT(EPOCH FROM now()),
     PRIMARY KEY (userId, friendId)
 );
 
@@ -45,8 +45,10 @@ CREATE TABLE challenges (
     description TEXT NOT NULL,
     type TEXT NOT NULL,
     daredById UUID REFERENCES users(userId) ON DELETE CASCADE,
-    creationDate TIMESTAMP DEFAULT now(),
-    deadlineDate TIMESTAMP
+    creationDate BIGINT DEFAULT EXTRACT(EPOCH FROM now()),
+    deadlineDate BIGINT,
+    goal INTEGER DEFAULT 0,
+    pictureUrl TEXT
 );
 
 -- Recreate the ChallengeMedia Table
@@ -55,7 +57,7 @@ CREATE TABLE challenge_media (
     challengeId UUID REFERENCES challenges(challengeId) ON DELETE CASCADE,
     mediaUrl TEXT NOT NULL,
     mediaType media_type NOT NULL,
-    timestamp TIMESTAMP DEFAULT now()
+    timestamp BIGINT DEFAULT EXTRACT(EPOCH FROM now())
 );
 
 -- Recreate the Dares Table
@@ -65,6 +67,6 @@ CREATE TABLE dares (
     daredToId UUID REFERENCES users(userId) ON DELETE CASCADE,
     isAccepted BOOLEAN DEFAULT FALSE,
     isCompleted BOOLEAN DEFAULT FALSE,
-    completionDate TIMESTAMP,
+    completionDate BIGINT,
     completionRate INTEGER DEFAULT 0
 );

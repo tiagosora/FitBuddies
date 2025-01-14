@@ -1,5 +1,6 @@
 package com.example.fitbuddies.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,26 +20,22 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ChallengeDetails
-import Participant
-import android.annotation.SuppressLint
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.filled.Map
+import com.example.fitbuddies.viewmodels.ChallengeDetails
+import com.example.fitbuddies.viewmodels.Participant
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.fitbuddies.utils.generateQRCode
-import ChallengeDetailsViewModel
+import com.example.fitbuddies.viewmodels.ChallengeDetailsViewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChallengeDetailsScreen(
     viewModel: ChallengeDetailsViewModel = hiltViewModel(),
@@ -53,10 +50,44 @@ fun ChallengeDetailsScreen(
         }
     }
 
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Challenge Details") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) {
+        innerPadding ->
+        ChallengeDetailsContent(
+            challengeDetails = challengeDetails,
+            challengeId = challengeId,
+            navController = navController,
+            innerPadding = innerPadding
+        )
+    }
+}
+
+@Composable
+fun ChallengeDetailsContent(
+    challengeDetails: ChallengeDetails?,
+    challengeId: String,
+    navController: NavController,
+    innerPadding: PaddingValues
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 60.dp, start = 16.dp, end = 16.dp)
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding()
+            )
     ) {
         item {
             QRCodeSection(
@@ -71,14 +102,12 @@ fun ChallengeDetailsScreen(
 
         }
 
-
-
         if (challengeDetails != null) {
             item {
-                ChallengeInfoCard(challengeDetails!!)
+                ChallengeInfoCard(challengeDetails)
             }
             item {
-                ChallengeDetailsAlignedSection(challengeDetails!!)
+                ChallengeDetailsAlignedSection(challengeDetails)
             }
             item {
                 Text(
@@ -88,7 +117,7 @@ fun ChallengeDetailsScreen(
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
             }
-            items(challengeDetails!!.participants) { participant ->
+            items(challengeDetails.participants) { participant ->
                 ParticipantItem(participant)
             }
         } else {
@@ -114,14 +143,14 @@ fun ChallengeDetailsAlignedSection(details: ChallengeDetails) {
             modifier = Modifier
                 .weight(1f)
         ) {
-            DetailCard("Duration", details.duration)
+            DetailCard("Duration", details.deadline)
             Spacer(modifier = Modifier.height(20.dp))
             DetailCard(
                 "Goal",
                 if (details.type == "Running" || details.type == "Cycling") {
-                    "${details.goalCompletion}/${details.goal} km"
+                    "${details.goal} km"
                 } else {
-                    "${details.goalCompletion}/${details.goal} h"
+                    "${details.goal} h"
                 }
             )
         }
@@ -253,7 +282,7 @@ fun QRCodeSection(challengeId: String) {
 @Composable
 fun StartExerciseSection(onStartExercise: (Long) -> Unit) {
     val startTime = remember { mutableStateOf<Long?>(null) }
-    val elapsedTime = remember { mutableStateOf(0L) } // TODO: Mandar isto para a API
+    val elapsedTime = remember { mutableLongStateOf(0L) }
     val isRunning = remember { mutableStateOf(false) }
 
     // Atualiza a contagem em tempo real enquanto está em execução
@@ -261,7 +290,7 @@ fun StartExerciseSection(onStartExercise: (Long) -> Unit) {
         if (isRunning.value) {
             while (isRunning.value) {
                 startTime.value?.let {
-                    elapsedTime.value = (System.currentTimeMillis() - it) / 1000
+                    elapsedTime.longValue = (System.currentTimeMillis() - it) / 1000
                 }
                 kotlinx.coroutines.delay(1000L) // Atualiza a cada segundo
             }
@@ -285,7 +314,7 @@ fun StartExerciseSection(onStartExercise: (Long) -> Unit) {
                 text = if (startTime.value == null) {
                     "Click Start to Begin Exercise" // Mensagem inicial
                 } else {
-                    formatTime(elapsedTime.value) // Tempo formatado
+                    formatTime(elapsedTime.longValue)
                 },
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -321,11 +350,11 @@ fun StartExerciseSection(onStartExercise: (Long) -> Unit) {
                         isRunning.value = false // Para a contagem
                     }
                     startTime.value?.let {
-                        elapsedTime.value = (System.currentTimeMillis() - it) / 1000
-                        onStartExercise(elapsedTime.value)
+                        elapsedTime.longValue = (System.currentTimeMillis() - it) / 1000
+                        onStartExercise(elapsedTime.longValue)
                     }
                     startTime.value = null // Reseta o tempo
-                    elapsedTime.value = 0L
+                    elapsedTime.longValue = 0L
                 }) {
                     Icon(
                         imageVector = Icons.Default.Stop,
@@ -339,6 +368,7 @@ fun StartExerciseSection(onStartExercise: (Long) -> Unit) {
     }
 }
 
+@SuppressLint("DefaultLocale")
 fun formatTime(seconds: Long): String {
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60

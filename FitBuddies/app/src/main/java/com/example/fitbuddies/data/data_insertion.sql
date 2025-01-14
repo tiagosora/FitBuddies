@@ -35,9 +35,9 @@ VALUES
 -- Main users are friends with each other
 INSERT INTO friendships (userId, friendId, isAccepted, creationDate)
 VALUES
-((SELECT userId FROM users WHERE email = 'user1@example.com'), (SELECT userId FROM users WHERE email = 'user2@example.com'), TRUE, now()),
-((SELECT userId FROM users WHERE email = 'user2@example.com'), (SELECT userId FROM users WHERE email = 'user3@example.com'), TRUE, now()),
-((SELECT userId FROM users WHERE email = 'user3@example.com'), (SELECT userId FROM users WHERE email = 'user1@example.com'), TRUE, now());
+((SELECT userId FROM users WHERE email = 'user1@example.com'), (SELECT userId FROM users WHERE email = 'user2@example.com'), TRUE, EXTRACT(EPOCH FROM now())),
+((SELECT userId FROM users WHERE email = 'user2@example.com'), (SELECT userId FROM users WHERE email = 'user3@example.com'), TRUE, EXTRACT(EPOCH FROM now())),
+((SELECT userId FROM users WHERE email = 'user3@example.com'), (SELECT userId FROM users WHERE email = 'user1@example.com'), TRUE, EXTRACT(EPOCH FROM now()));
 
 -- Friendships between main users and other users
 DO $$
@@ -53,7 +53,7 @@ BEGIN
     FOREACH mainUser IN ARRAY mainUsers LOOP
         FOREACH otherUser IN ARRAY otherUsers LOOP
             INSERT INTO friendships (userId, friendId, isAccepted, creationDate)
-            VALUES (mainUser, otherUser, (random() < 0.5), now());
+            VALUES (mainUser, otherUser, (random() < 0.5), EXTRACT(EPOCH FROM now()));
         END LOOP;
     END LOOP;
 END $$;
@@ -67,15 +67,17 @@ BEGIN
     SELECT array_agg(userId) INTO mainUsers FROM users WHERE email IN ('user1@example.com', 'user2@example.com', 'user3@example.com');
 
     FOR i IN 1..50 LOOP
-        INSERT INTO challenges (challengeId, title, description, type, daredById, creationDate, deadlineDate)
+        INSERT INTO challenges (challengeId, title, description, type, daredById, creationDate, deadlineDate, goal, pictureUrl)
         VALUES (
             gen_random_uuid(),
             'Challenge ' || i,
             'This is challenge ' || i,
             types[(floor(random() * array_length(types, 1))::int) + 1],
             mainUsers[(floor(random() * array_length(mainUsers, 1))::int) + 1],
-            now(),
-            now() + interval '7 days'
+            EXTRACT(EPOCH FROM now()),
+            EXTRACT(EPOCH FROM now() + interval '7 days'),
+            floor(random() * 100)::int,
+            'https://example.com/challenges/challenge' || i || '.jpg'
         );
     END LOOP;
 END $$;
@@ -102,7 +104,7 @@ BEGIN
             users[userIndex],
             (random() < 0.5), -- Boolean value
             (random() < 0.5), -- Boolean value
-            now(),
+            EXTRACT(EPOCH FROM now()),
             floor(random() * 100)::int -- Integer completion rate
         );
     END LOOP;
@@ -128,7 +130,7 @@ BEGIN
             challenges[challengeIndex],
             'https://example.com/media/challenge' || i || '.jpg',
             'PHOTO',
-            now()
+            EXTRACT(EPOCH FROM now())
         );
     END LOOP;
 END $$;

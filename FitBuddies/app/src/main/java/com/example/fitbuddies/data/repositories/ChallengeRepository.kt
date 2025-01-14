@@ -12,14 +12,35 @@ import io.github.jan.supabase.postgrest.rpc
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayOutputStream
+import kotlin.time.Duration.Companion.days
 
 class ChallengeRepository() {
 
+    suspend fun getChallengeById(challengeId: String): Challenge? {
+        val response = client.from("challenges").select {
+            filter {
+                eq("challengeid", challengeId)
+            }
+        }
+        try {
+            println("Requested Challenge Response: ${response.data}")
+            val decodedResponse: List<Challenge> = Json.decodeFromString(response.data)
+            println("Decoded Challenge: $decodedResponse")
+            return decodedResponse.firstOrNull()
+        } catch (e: Exception) {
+            println("Deserialization Error: ${e.message}")
+            return null
+        }
+    }
+
     suspend fun createChallenge(userId: String, title: String, description: String, type: String, duration: Long, goal: Int, pictureImageBitmap: ImageBitmap?): Challenge? {
-        val newChallenge = Challenge(title = title, description = description, type = type, daredById = userId, deadlineDate = duration.toString(), goal = goal)
+        val deadlineDate = System.currentTimeMillis().plus(duration.days.inWholeMilliseconds)
+        val newChallenge = Challenge(title = title, description = description, type = type, daredById = userId, deadlineDate = deadlineDate, goal = goal)
+
+        println("New Challenge: $newChallenge")
 
         if (pictureImageBitmap != null) {
-            val path = "images/${newChallenge.pictureUrl}"
+            val path = "challenge_${newChallenge.pictureUrl}"
             newChallenge.pictureUrl = path
 
             val pictureBitmap: Bitmap = pictureImageBitmap.asAndroidBitmap()
@@ -35,9 +56,9 @@ class ChallengeRepository() {
         }
         try {
             println("Create Challenge Response: ${response.data}")
-            val decodedResponse: Challenge = Json.decodeFromString(response.data)
+            val decodedResponse: List<Challenge> = Json.decodeFromString(response.data)
             println("Decoded Challenge: $decodedResponse")
-            return decodedResponse
+            return decodedResponse.firstOrNull()
         } catch (e: Exception) {
             println("Deserialization Error: ${e.message}")
             return null
@@ -191,8 +212,8 @@ class ChallengeRepository() {
         val description: String = "",
         val type: String = "",
         val daredbyid: String = "",
-        val creationdate: String = "",
-        val deadlinedate: String = ""
+        val creationdate: Long = 0,
+        val deadlinedate: Long = 0
     )
 
     @Serializable
@@ -200,7 +221,7 @@ class ChallengeRepository() {
         val dareid: String = "",
         val isaccepted: Boolean = false,
         val iscompleted: Boolean = false,
-        val completiondate: String = "",
+        val completiondate: Long,
         val completionrate: Float = 0.0f,
         val challenges: ChallengeDetails = ChallengeDetails()
     )
@@ -211,15 +232,15 @@ class ChallengeRepository() {
         val daredtoid: String,
         val isaccepted: Boolean,
         val iscompleted: Boolean,
-        val completiondate: String,
+        val completiondate: Long,
         val completionrate: Float,
         val challengeid: String,
         val title: String,
         val description: String,
         val type: String,
         val daredbyid: String,
-        val creationdate: String,
-        val deadlinedate: String
+        val creationdate: Long,
+        val deadlinedate: Long
     )
 }
 
