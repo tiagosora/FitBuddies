@@ -8,7 +8,14 @@ class BucketRepository {
 
     companion object {
         suspend fun getImageURL(path: String): String {
-            return client.storage.from("images").createSignedUrl(path, expiresIn = 10.minutes)
+            println("BucketRepository path: $path")
+
+            println("BucketRepository: ${client.storage.from("images").list()}")
+
+            val url = client.storage.from("images").createSignedUrl("mano_bro.png", expiresIn = 10.minutes)
+            println("BucketRepository: $url")
+            return url
+
         }
 
         suspend fun uploadImage(path: String, image: ByteArray) {

@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fitbuddies.data.models.User
+import com.example.fitbuddies.data.repositories.BucketRepository
 import com.example.fitbuddies.data.repositories.ChallengeRepository
 import com.example.fitbuddies.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +38,13 @@ class ProfileViewModel @Inject constructor(
             val userId = sharedPreferences.getString("currentUserId", null)
             if (userId != null) {
                 val userData = userRepository.getUserById(userId)
+                println("ProfileViewModel: $userData")
+                try {
+                    userData?.profilePictureUrl = BucketRepository.getImageURL(userData.profilePictureUrl.toString())
+                } catch (e: Exception) {
+                    println("ProfileViewModel: $e")
+                }
+                println("ProfileViewModel: $userData")
                 _user.value = userData
             }
         }

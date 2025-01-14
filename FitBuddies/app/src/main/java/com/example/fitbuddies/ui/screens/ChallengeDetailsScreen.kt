@@ -38,15 +38,15 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChallengeDetailsScreen(
-    viewModel: ChallengeDetailsViewModel = hiltViewModel(),
+    challengeDetailsViewModel: ChallengeDetailsViewModel = hiltViewModel(),
     challengeId: String,
     navController: NavController
 ) {
-    val challengeDetails by viewModel.challengeDetails.collectAsStateWithLifecycle()
+    val challengeDetails by challengeDetailsViewModel.challengeDetails.collectAsStateWithLifecycle()
 
     LaunchedEffect(challengeId) {
         if (challengeId.isNotEmpty()) {
-            viewModel.loadChallengeDetails(challengeId)
+            challengeDetailsViewModel.loadChallengeDetails(challengeId)
         }
     }
 
@@ -77,7 +77,8 @@ fun ChallengeDetailsContent(
     challengeDetails: ChallengeDetails?,
     challengeId: String,
     navController: NavController,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    challengeDetailsViewModel: ChallengeDetailsViewModel = hiltViewModel()
 ) {
     LazyColumn(
         modifier = Modifier
@@ -98,7 +99,10 @@ fun ChallengeDetailsContent(
         if(challengeDetails?.type == "Running" || challengeDetails?.type == "Cycling"){
             item { StartMapSection(onStartExercise = {}, navController) }}
         else{
-            item { StartExerciseSection(onStartExercise = { elapsedTime -> println("Tempo decorrido: $elapsedTime segundos")})   }
+            item { StartExerciseSection(onStartExercise = { elapsedTime ->
+                println("Elapsed Time: $elapsedTime")
+                if (challengeId.isNotEmpty() && challengeDetails != null ) challengeDetailsViewModel.updateDareCompletion(challengeId, challengeDetails.goal, elapsedTime)
+            })}
 
         }
 
@@ -148,11 +152,22 @@ fun ChallengeDetailsAlignedSection(details: ChallengeDetails) {
             DetailCard(
                 "Goal",
                 if (details.type == "Running" || details.type == "Cycling") {
-                    "${details.goal} km"
+                    details.goalCompletion?.let {
+                        "${it}/${details.goal} km"
+                    } ?: "${details.goal} km"
                 } else {
-                    "${details.goal} h"
+                    details.goalCompletion?.let {
+                        "${it}/${details.goal} hours"
+                    } ?: "${details.goal} hours"
                 }
             )
+            details.goalCompletion?.let {
+                Spacer(modifier = Modifier.height(20.dp))
+                DetailCard(
+                    "Progress",
+                    "${(it.toDouble() / details.goal.toDouble() * 100).toInt()} %"
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(16.dp))

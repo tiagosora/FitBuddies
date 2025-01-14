@@ -1,7 +1,9 @@
 package com.example.fitbuddies.viewmodels
 
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.fitbuddies.data.models.Challenge
 import com.example.fitbuddies.data.models.Dare
 import com.example.fitbuddies.data.models.User
 import com.example.fitbuddies.data.repositories.ChallengeRepository
@@ -28,6 +30,7 @@ data class ChallengeDetails(
     val type: String,
     val deadline: String,
     val goal: Int,
+    val goalCompletion : Number? = null,
     val participants: List<Participant>
 )
 
@@ -35,7 +38,8 @@ data class ChallengeDetails(
 class ChallengeDetailsViewModel @Inject constructor(
     private val challengeRepository: ChallengeRepository,
     private val dareRepository: DareRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sharedPrefs: SharedPreferences
 ) : ViewModel() {
 
     private val _challengeDetails = MutableStateFlow<ChallengeDetails?>(null)
@@ -47,6 +51,10 @@ class ChallengeDetailsViewModel @Inject constructor(
             var associatedDares : List<Dare> = dareRepository.getDaredByChallengeId(challengeId)
             var participantsIds : List<String> = associatedDares.map { it.daredToId }
             var participants: List<User> = userRepository.getUsersByIds(participantsIds)
+
+            val userId = sharedPrefs.getString("currentUserId", null)
+            val userDare = associatedDares.find { it.daredToId == userId }
+
 
             if (challenge == null) {
                 _challengeDetails.value = null
@@ -61,9 +69,19 @@ class ChallengeDetailsViewModel @Inject constructor(
                 deadline = challenge.deadlineDate.toString(),
                 type = challenge.type,
                 goal = challenge.goal,
+                goalCompletion = userDare?.completionRate?.toDouble()?.div(100)?.times(challenge.goal),
                 participants = participants.map { Participant(it.userId,"${it.firstName} ${it.lastName}", it.profilePictureUrl) }
             )
 
+        }
+    }
+
+    fun updateDareCompletion(challengeId: String, challengeGoal: Int, newProgressValue: Long) {
+        viewModelScope.launch {
+            val userId = sharedPrefs.getString("currentUserId", null)
+            if (userId != null) {
+                dareRepository.updateDareCompletion(challengeId, challengeGoal, userId, newProgressValue)
+            }
         }
     }
 }

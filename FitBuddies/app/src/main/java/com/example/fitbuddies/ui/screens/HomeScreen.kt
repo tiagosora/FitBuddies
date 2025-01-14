@@ -107,7 +107,7 @@ fun YourActivityTab(
         // Adicionamos um espaço antes de exibir a DailyActivitySummary
         item {
             Spacer(modifier = Modifier.height(24.dp))  // <<--- Espaço extra
-            DailyActivitySummary(homeViewModel, navController)
+            DailyActivitySummary(homeViewModel)
         }
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -154,13 +154,11 @@ fun YourActivityTab(
 @Composable
 fun DailyActivitySummary(
     homeViewModel: HomeViewModel,
-    navController: NavHostController
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
-            .clickable { navController.navigate("challenge_details/daily_activity") },
+            .height(100.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
@@ -197,14 +195,14 @@ fun DailyActivitySummary(
 @Composable
 fun ActiveChallengeCard(
     challenge: ActiveChallenge,
-    navController: NavHostController
+    navController: NavHostController,
 ) {
     Card(
         modifier = Modifier
             .width(200.dp)
             .height(180.dp)
             .clickable {
-                val id = challenge.challengeId ?: "static_id"
+                val id = challenge.challengeId
                 navController.navigate("challenge_details/$id")
             },
         shape = RoundedCornerShape(16.dp),

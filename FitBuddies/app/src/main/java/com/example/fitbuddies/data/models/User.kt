@@ -17,5 +17,5 @@ data class User(
     @SerialName("challengescompleted") val challengesCompleted: Int = 0,
     @SerialName("distancetraveled") val distanceTraveled: Double = 0.0,
     @SerialName("caloriesburned") val caloriesBurned: Int = 0,
-    @SerialName("profilepictureurl") val profilePictureUrl: String? = null
+    @SerialName("profilepictureurl") var profilePictureUrl: String? = null
 )

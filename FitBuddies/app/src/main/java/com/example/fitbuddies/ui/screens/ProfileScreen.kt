@@ -1,5 +1,6 @@
 package com.example.fitbuddies.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.fitbuddies.viewmodels.ProfileViewModel
 
 @Composable
@@ -101,22 +103,14 @@ fun ProfileHeader(name: String, email: String, profilePictureUrl: String) {
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // TODO: Replace with actual image loading using Coil
-        Box(
+        AsyncImage(
+            model = profilePictureUrl,
+            contentDescription = "Profile Picture",
             modifier = Modifier
                 .size(80.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer)
-        ) {
-            Icon(
-                Icons.Default.Person,
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.Center),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
+                .background(MaterialTheme.colorScheme.primaryContainer),
+        )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
