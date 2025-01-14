@@ -59,12 +59,12 @@ class MainActivity : ComponentActivity() {
                         if (isOnboardingCompleted) "sign in" else "onboarding"
                     )
                 }
-                var isAuthenticated by remember { mutableStateOf(true) }
+                var isAuthenticated by remember { mutableStateOf(false) }
 
                 // Exemplo fixo de currentUserId
-                sharedPreferences.edit()
-                    .putString("currentUserId", "9eeabe76-f8fe-4236-8116-73c2ca772689")
-                    .apply()
+//                sharedPreferences.edit()
+//                    .putString("currentUserId", "9eeabe76-f8fe-4236-8116-73c2ca772689")
+//                    .apply()
 
                 val authenticationViewModel = viewModel<AuthenticationViewModel>()
 
