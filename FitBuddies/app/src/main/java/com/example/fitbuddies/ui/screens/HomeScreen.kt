@@ -39,6 +39,9 @@ import com.example.fitbuddies.viewmodels.HomeViewModel
 import com.example.fitbuddies.viewmodels.HomeViewModel.ActiveChallenge
 import com.example.fitbuddies.viewmodels.HomeViewModel.FitBuddyChallenge
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.collectAsState
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -156,11 +159,13 @@ fun DailyActivitySummary(
     homeViewModel: HomeViewModel,
     navController: NavHostController
 ) {
+    val dailySteps = homeViewModel.dailySteps.collectAsState().value
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .clickable { navController.navigate("challenge_details/daily_activity") },
+            .clickable { },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
@@ -178,7 +183,7 @@ fun DailyActivitySummary(
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    homeViewModel.dailySteps.toString(),
+                    dailySteps.toString(),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold
